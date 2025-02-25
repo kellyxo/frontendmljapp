@@ -8,6 +8,7 @@ import ThemeSwitcher from './components/ThemeSwitcher';
 import './App.css';
 import './ModernTheme.css';
 
+
 function App() {
   const [currentUser, setCurrentUser] = useState(localStorage.getItem('currentUser'));
   const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'light');

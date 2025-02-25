@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/japp';
+const API_URL = 'https://mljapp.onrender.com/japp';
 
 const Login = ({ setCurrentUser }) => {
   const [formData, setFormData] = useState({

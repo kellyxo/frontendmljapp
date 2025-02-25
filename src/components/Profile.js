@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'http://localhost:8080/japp';
+const API_URL = 'https://mljapp.onrender.com/japp';
 
 const Profile = ({ currentUser, handleLogout }) => {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Memory Lane",
+  "name": "Memory Lane Jorunal App",
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,8 +18,10 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "https://frontendmljapp.onrender.com",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#34495E",
+  "background_color": "#F5D6BA",
+  "description": "App to journal your Memories",
+  "orientation": "any"
 }

@@ -14,30 +14,7 @@
 // Keep most of this file the same as the first code snippet you shared
 // Just update the register function to ensure it works with your app
 
-export function register(config) {
-  if ((process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development') && 'serviceWorker' in navigator) {
-    // This is a change to allow testing in development mode too
-    const publicUrl = new URL(process.env.PUBLIC_URL || '', window.location.href);
-    if (publicUrl.origin !== window.location.origin) {
-      return;
-    }
 
-    window.addEventListener('load', () => {
-      const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
-
-      if (isLocalhost) {
-        checkValidServiceWorker(swUrl, config);
-        navigator.serviceWorker.ready.then(() => {
-          console.log('Memory Lane is being served cache-first by a service worker');
-        });
-      } else {
-        registerValidSW(swUrl, config);
-      }
-    });
-  }
-}
-
-// Keep the rest of the file the same
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
     // [::1] is the IPv6 localhost address.

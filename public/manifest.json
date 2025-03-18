@@ -20,7 +20,7 @@
       "purpose": "any"
     },
     {
-      "src": "assets/manifest-icon-512.maskable.png",
+      "src": "assets/ios/512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"

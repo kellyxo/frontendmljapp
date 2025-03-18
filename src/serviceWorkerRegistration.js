@@ -1,5 +1,4 @@
 // src/serviceWorkerRegistration.js
-// Simple service worker registration that doesn't rely on environment variables
 
 export function register() {
   if ('serviceWorker' in navigator) {

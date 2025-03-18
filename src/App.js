@@ -7,7 +7,6 @@ import Profile from './components/Profile';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import './App.css';
 import './ModernTheme.css';
-import { useState, useEffect } from 'react';
 
 
 

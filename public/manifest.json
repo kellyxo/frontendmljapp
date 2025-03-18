@@ -16,7 +16,8 @@
     {
       "src": "assets/ios/512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     },
     {
       "src": "assets/manifest-icon-512.maskable.png",
@@ -30,5 +31,22 @@
   "theme_color": "#34495E",
   "background_color": "#F5D6BA",
   "description": "App to journal your Memories",
-  "orientation": "any"
+  "orientation": "any",
+  "id": "memory-lane-journal-app",
+  "launch_handler": {
+  "client_mode": ["navigate-existing", "auto"]
+},
+"screenshots": [
+  {
+    "src": "assets/ios/1024.png",
+    "sizes": "1024x1024",
+    "type": "image/png",
+    "form_factor": "wide"
+  }
+],
+"dir": "ltr",
+"lang": "en-US",
+"categories": ["utilities", "productivity"]
+
+
 }

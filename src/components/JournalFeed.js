@@ -56,7 +56,23 @@ const JournalFeed = ({ currentUser }) => {
       imageFile: e.target.files[0]
     });
   };
-
+  const handleDeleteEntry = async (entryId)  => {
+    setLoading(true)
+    if(!window.confirm("Are you sure you want to delete this entry? This action cannot be undone.")){
+      return;
+    }
+    try{
+      await axios.delete(`${API_URL}/entries/${entryId}`);
+      closeModal();
+      fetchEntries();
+    }
+    catch (error) {
+    console.error('Error deleting entry:', error);
+    // Show error message
+  } finally {
+    setLoading(false);
+  }
+  }
   const handleCreateEntry = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -198,6 +214,11 @@ const JournalFeed = ({ currentUser }) => {
             <p className="text-muted">
               Created on: {new Date(selectedEntry.createdAt).toLocaleDateString()}
             </p>
+            <button
+            onClick={() => handleDeleteEntry(selectedEntry.id)}
+            className='btn-danger'
+            > Delete Entry
+            </button>
           </div>
         </div>
       )}

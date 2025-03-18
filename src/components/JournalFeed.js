@@ -25,7 +25,10 @@ const JournalFeed = ({ currentUser }) => {
     try {
       const response = await axios.get(`${API_URL}/entries/${currentUser}`);
       if (response.data && response.data.length > 0) {
-        setEntries(response.data);
+        const sortedEntries = response.data.sort((a,b) => 
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setEntries(sortedEntries);
       } else {
         setEntries([]);
       }

@@ -4,10 +4,11 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
+    <meta<meta name="theme-color" content="#34495E" />
+    <meta name="description" content="Memory Lane Journal App" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Memory Lane">
     />
     <link rel="apple-touch-icon" href="/public/assets/apple-touch-icon.png" />
     <!--
@@ -73,15 +74,74 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+    <style>
+      #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #F5D6BA; /* Match your manifest background_color */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      
+      .app-logo {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 20px;
+      }
+      
+      .app-title {
+        font-family: 'Arial', sans-serif;
+        color: #34495E;
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(52, 73, 94, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid #34495E;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    
+    <!-- Loading screen that shows before React loads -->
+    <div id="loading-screen">
+      <img src="%PUBLIC_URL%/assets/ios/512.png" alt="Memory Lane" class="app-logo">
+      <h1 class="app-title">Memory Lane</h1>
+      <div class="loading-spinner"></div>
+    </div>
+    
+    <div id="root"></div>
+    
+    <script>
+      // Hide the loading screen when React has loaded
+      window.addEventListener('load', function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          // Fade out
+          loadingScreen.style.opacity = 0;
+          // Remove from DOM after animation completes
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+          }, 500);
+        }
+      });
+    </script>
   </body>
 </html>

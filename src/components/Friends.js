@@ -251,12 +251,24 @@ const Friends = ({ currentUser }) => {
               placeholder="Search by username"
               value={searchUsername}
               onChange={(e) => setSearchUsername(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px', // Larger touch target
+                fontSize: '16px', // Prevent auto-zoom on iOS
+                WebkitAppearance: 'none', // Remove default styling on iOS
+                appearance: 'none'
+              }}
             />
+            
             <button 
               type="submit" 
               className="btn-primary"
               disabled={loading}
-              style={{ minWidth: '80px' }}
+              style={{ 
+                width: '100%', // Full width on mobile
+                padding: '12px',
+                fontSize: '16px'
+              }}
             >
               Search
             </button>

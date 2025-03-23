@@ -169,7 +169,7 @@ const Chat = ({ currentUser }) => {
               return;
             }
           } catch (e) {
-            // Not valid JSON or not an array
+            // Not valid JSON, handle as plain text
             console.log("Message not JSON:", e);
           }
           
@@ -181,7 +181,7 @@ const Chat = ({ currentUser }) => {
             return;
           }
           
-          // Parse regular messages
+          // Parse regular messages (username: content format)
           setMessages(prevMessages => {
             const messageRegex = /([^:]+): (.*)/;
             const match = message.match(messageRegex);
@@ -207,6 +207,7 @@ const Chat = ({ currentUser }) => {
               }];
             }
             
+            // Add as system message if it doesn't match the regex
             return [...prevMessages, { 
               content: message, 
               system: true,
@@ -215,7 +216,7 @@ const Chat = ({ currentUser }) => {
             }];
           });
         } catch (error) {
-          console.error('Error handling WebSocket message:', error);
+          console.error("Error handling WebSocket message:", error);
         }
       };
       

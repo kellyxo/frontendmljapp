@@ -1,9 +1,9 @@
 // public/service-worker.js
 
-// Names for our caches
-const STATIC_CACHE = 'memorylane-static-v1';  // For app files (HTML, CSS, JS)
-const DATA_CACHE = 'memorylane-data-v1';      // For API responses
-const IMAGE_CACHE = 'memorylane-images-v1';   // For images
+// Names for our caches with updated versions
+const STATIC_CACHE = 'memorylane-static-v2';  // For app files (HTML, CSS, JS)
+const DATA_CACHE = 'memorylane-data-v2';      // For API responses
+const IMAGE_CACHE = 'memorylane-images-v2';   // For images
 
 // Lists of assets to cache immediately on install
 const STATIC_ASSETS = [
@@ -59,11 +59,19 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
+  // Only attempt to cache GET requests
+  if (event.request.method !== 'GET') {
+    // For non-GET requests, just pass through to the network without caching
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
   // Handle API requests (to your backend)
   if (event.request.url.includes('/japp/')) {
     console.log('Service Worker: Fetching API data', event.request.url);
     
     event.respondWith(
+      // Network-first strategy for API requests
       fetch(event.request)
         .then(response => {
           // If we got a valid response, clone it and store in cache
@@ -82,7 +90,7 @@ self.addEventListener('fetch', (event) => {
         })
     );
   } 
-  // Handle image requests
+  // Handle image requests - cache-first strategy
   else if (
     event.request.url.match(/\.(jpg|jpeg|png|gif|svg|webp)$/) ||
     event.request.destination === 'image'
@@ -96,6 +104,11 @@ self.addEventListener('fetch', (event) => {
         
         // Otherwise fetch from network
         return fetch(event.request).then(response => {
+          // Make sure we got a valid response
+          if (!response || response.status !== 200) {
+            return response;
+          }
+          
           // Cache the fetched response
           const responseClone = response.clone();
           caches.open(IMAGE_CACHE).then(cache => {
@@ -107,7 +120,7 @@ self.addEventListener('fetch', (event) => {
       })
     );
   } 
-  // Handle other requests (static assets)
+  // Handle other requests (static assets) - cache-first strategy
   else {
     event.respondWith(
       caches.match(event.request).then(cachedResponse => {
@@ -219,3 +232,29 @@ async function syncPendingOperations() {
     console.error('Service Worker: Error syncing operations:', error);
   }
 }
+
+// Add notification click handler
+self.addEventListener('notificationclick', (event) => {
+  console.log('Notification click received', event);
+  
+  event.notification.close();
+  
+  // This will focus on an open window or open a new one
+  const urlToOpen = new URL('/', self.location.origin).href;
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        // Check if a window/tab is already open
+        for (const client of clientList) {
+          if (client.url === urlToOpen && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // Open a new window if none are open
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+  );
+});

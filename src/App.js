@@ -1,20 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/Login';
-import Register from './components/Register';
-import JournalFeed from './components/JournalFeed';
-import PublicFeed from './components/PublicFeed';
-import Friends from './components/Friends';
-import Chat from './components/Chat';
-import NotificationsPage from './components/NotificationsPage'; // Rename this to avoid confusion
-import Profile from './components/Profile';
-import ThemeSwitcher from './components/ThemeSwitcher';
-import BottomNavigation from './components/BottomNavigation';
-import FirebaseNotifications from './components/FirebaseNotifications';
-import axios from 'axios';
-import './App.css';
-import './ModernTheme.css';
-import './BeigeTheme.css'; // Import the new beige theme
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import JournalFeed from "./components/JournalFeed";
+import PublicFeed from "./components/PublicFeed";
+import Friends from "./components/Friends";
+import Chat from "./components/Chat";
+import NotificationsPage from "./components/NotificationsPage"; // Rename this to avoid confusion
+import Profile from "./components/Profile";
+import ThemeSwitcher from "./components/ThemeSwitcher";
+import BottomNavigation from "./components/BottomNavigation";
+import FirebaseNotifications from "./components/FirebaseNotifications";
+import axios from "axios";
+import "./App.css";
+import "./ModernTheme.css";
+import "./BeigeTheme.css"; // Import the new beige theme
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -28,7 +33,7 @@ const firebaseConfig = {
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
@@ -36,54 +41,65 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(localStorage.getItem('currentUser'));
-  const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'beige'); // Set default to beige
-  const [profilePic, setProfilePic] = useState("https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg");
-  
+  const [currentUser, setCurrentUser] = useState(
+    localStorage.getItem("currentUser")
+  );
+  const [currentTheme, setCurrentTheme] = useState(
+    localStorage.getItem("theme") || "beige"
+  ); // Set default to beige
+  const [profilePic, setProfilePic] = useState(
+    "https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg"
+  );
+
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem('currentUser', currentUser);
+      localStorage.setItem("currentUser", currentUser);
       // Fetch user profile to get their profile picture
       fetchUserProfile();
     } else {
-      localStorage.removeItem('currentUser');
+      localStorage.removeItem("currentUser");
     }
   }, [currentUser]);
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get(`https://mljapp.onrender.com/japp/getUser`, {
-        data: { username: currentUser }
-      });
+      console.log("Fetching profile for user:", currentUser);
+      
+      // Use path parameter for GET request
+      const response = await axios.get(`https://mljapp.onrender.com/japp/getUser/${currentUser}`);
+      
+      console.log("Profile response:", response.data);
       
       if (response.status === 200 && response.data && response.data.pfpUrl) {
         setProfilePic(response.data.pfpUrl);
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error("Error fetching user profile:", error);
     }
   };
-
+  const updateProfilePic = (newPicUrl) => {
+    setProfilePic(newPicUrl);
+  };
   useEffect(() => {
     document.documentElement.className = currentTheme;
-    localStorage.setItem('theme', currentTheme);
+    localStorage.setItem("theme", currentTheme);
   }, [currentTheme]);
 
   const handleLogout = async () => {
     try {
       // Call the logout endpoint
-      await axios.put('https://mljapp.onrender.com/japp/logout/${currentUser}');
-      
+      await axios.put(`https://mljapp.onrender.com/japp/logout/${currentUser}`);
+
       // Clear user data from localStorage
-      localStorage.removeItem('currentUser');
-      
+      localStorage.removeItem("currentUser");
+
       // Update the state to trigger redirects
       setCurrentUser(null);
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error("Error during logout:", error);
       // You could show an error message to the user here
       // But still clear the local state to "force" logout even if API fails
-      localStorage.removeItem('currentUser');
+      localStorage.removeItem("currentUser");
       setCurrentUser(null);
     }
   };
@@ -92,54 +108,117 @@ function App() {
     <Router>
       <div className="app-container">
         <div className="theme-switcher-container">
-          <ThemeSwitcher currentTheme={currentTheme} setCurrentTheme={setCurrentTheme} />
+          <ThemeSwitcher
+            currentTheme={currentTheme}
+            setCurrentTheme={setCurrentTheme}
+          />
         </div>
-        
+
         {currentUser && (
           <>
             {/* Profile Icon in top right */}
             <div className="profile-icon-container">
-              <img 
-                src={profilePic} 
-                alt="Profile" 
+              <img
+                src={profilePic}
+                alt="Profile"
                 className="profile-icon"
-                onClick={() => window.location.href = "/profile"}
+                onClick={() => (window.location.href = "/profile")}
               />
             </div>
-            
+
             {/* Initialize Firebase notifications with fixed component */}
             <FirebaseNotifications currentUser={currentUser} app={app} />
-            
+
             {/* Bottom Navigation */}
             <BottomNavigation currentUser={currentUser} />
           </>
         )}
 
         <Routes>
-          <Route path="/" element={
-            currentUser ? <Navigate to="/journal" /> : <Login setCurrentUser={setCurrentUser} />
-          } />
-          <Route path="/register" element={
-            currentUser ? <Navigate to="/journal" /> : <Register setCurrentUser={setCurrentUser} />
-          } />
-          <Route path="/journal" element={
-            currentUser ? <JournalFeed currentUser={currentUser} /> : <Navigate to="/" />
-          } />
-          <Route path="/public-feed" element={
-            currentUser ? <PublicFeed currentUser={currentUser} /> : <Navigate to="/" />
-          } />
-          <Route path="/friends" element={
-            currentUser ? <Friends currentUser={currentUser} /> : <Navigate to="/" />
-          } />
-          <Route path="/chat" element={
-            currentUser ? <Chat currentUser={currentUser} /> : <Navigate to="/" />
-          } />
-          <Route path="/notifications" element={
-            currentUser ? <NotificationsPage currentUser={currentUser} /> : <Navigate to="/" />
-          } />
-          <Route path="/profile" element={
-            currentUser ? <Profile currentUser={currentUser} handleLogout={handleLogout} /> : <Navigate to="/" />
-          } />
+          <Route
+            path="/"
+            element={
+              currentUser ? (
+                <Navigate to="/journal" />
+              ) : (
+                <Login setCurrentUser={setCurrentUser} />
+              )
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              currentUser ? (
+                <Navigate to="/journal" />
+              ) : (
+                <Register setCurrentUser={setCurrentUser} />
+              )
+            }
+          />
+          <Route
+            path="/journal"
+            element={
+              currentUser ? (
+                <JournalFeed currentUser={currentUser} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/public-feed"
+            element={
+              currentUser ? (
+                <PublicFeed currentUser={currentUser} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/friends"
+            element={
+              currentUser ? (
+                <Friends currentUser={currentUser} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              currentUser ? (
+                <Chat currentUser={currentUser} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              currentUser ? (
+                <NotificationsPage currentUser={currentUser} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              currentUser ? (
+                <Profile
+                  currentUser={currentUser}
+                  handleLogout={handleLogout}
+                  updateProfilePic={updateProfilePic}
+                />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
         </Routes>
       </div>
     </Router>

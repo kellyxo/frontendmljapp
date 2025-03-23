@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const API_URL = 'https://mljapp.onrender.com/japp';
 
-const Profile = ({ currentUser, handleLogout }) => {
+const Profile = ({ currentUser, handleLogout, updateProfilePic }) => {
   const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -22,10 +22,15 @@ const Profile = ({ currentUser, handleLogout }) => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        // Fetch user data
-        const response = await axios.get(`${API_URL}/getUser`, {
-          data: { username: currentUser }
-        });
+        console.log("Fetching profile for user:", currentUser);
+        if (!currentUser) {
+          console.error("currentUser is not set. Value:", currentUser);
+          return; // Don't make the API call if currentUser isn't available
+        }
+        
+        const response = await axios.get(`${API_URL}/getUser/${currentUser}`);
+        
+        console.log("Profile response:", response.data);
         
         if (response.status === 200) {
           setUserProfile(response.data);
@@ -42,6 +47,7 @@ const Profile = ({ currentUser, handleLogout }) => {
       fetchUserProfile();
     }
   }, [currentUser]);
+
   const handleChangePassword = async () => {
     if (!newPassword) {
       setMessage('Please enter a new password');
@@ -138,6 +144,9 @@ const Profile = ({ currentUser, handleLogout }) => {
           ...userProfile,
           pfpUrl: response.data
         });
+        
+        // Update profile pic in parent component using the passed function
+        updateProfilePic(response.data);
         
         // Clear the file input
         setProfileImage(null);
@@ -280,20 +289,19 @@ const Profile = ({ currentUser, handleLogout }) => {
           This action is permanent and will delete all your entries.
         </p>
           
-          <div className="profile-section" style={{ marginTop: '30px' }}>
-            <button className={`btn-primary bounce ${loading ? 'disabled' : ''}`}
+        <div className="profile-section" style={{ marginTop: '30px' }}>
+          <button 
+            className={`btn-primary bounce ${loading ? 'disabled' : ''}`}
             onClick={handleLogout}
             disabled={loading}
-            
-            >
-              Log out
-            </button>
-          </div>
+          >
+            Log out
+          </button>
+        </div>
       </div>
       
       <div style={{ height: '70px' }}></div> {/* Space for bottom navigation */}
     </div>
-  
   );
 };
 

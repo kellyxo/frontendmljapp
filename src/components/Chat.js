@@ -464,7 +464,6 @@ const Chat = ({ currentUser }) => {
               {/* Message input */}
               <form 
                 onSubmit={sendMessage}
-                onSubmit={sendMessage}
                 style={{ 
                   padding: '15px',
                   borderTop: '1px solid var(--shadow-color)',

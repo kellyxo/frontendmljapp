@@ -1,0 +1,141 @@
+/* Beige theme CSS with loading page color scheme */
+
+:root {
+    --primary-color: #F5D6BA; /* Light beige */
+    --secondary-color: #D6A267; /* Darker beige/tan */
+    --background-color: #FFF2E4; /* Very light beige */
+    --text-color: #5B4636; /* Dark brown */
+    --shadow-color: rgba(214, 162, 103, 0.3); /* Beige shadow */
+    --card-bg: rgba(255, 242, 228, 0.9); /* Translucent light beige */
+    --primary-color-rgb: 214, 162, 103; /* RGB values for primary color */
+    
+    /* Define variables for new accent colors */
+    --accent-color: #8B7355; /* Warm brown accent */
+    --accent-light: #E8D0B3; /* Light accent for highlights */
+    --accent-dark: #4A3728; /* Dark accent for text */
+    --error-color: #B24C32; /* Reddish brown for errors */
+    --success-color: #6B8E4E; /* Olive green for success */
+  }
+  
+  /* Theme Classes */
+  html.beige {
+    --primary-color: #F5D6BA;
+    --secondary-color: #D6A267;
+    --background-color: #FFF2E4;
+    --text-color: #5B4636;
+    --shadow-color: rgba(214, 162, 103, 0.3);
+    --card-bg: rgba(255, 242, 228, 0.9);
+    --primary-color-rgb: 214, 162, 103;
+    --accent-color: #8B7355;
+    --accent-light: #E8D0B3;
+    --accent-dark: #4A3728;
+    --error-color: #B24C32;
+    --success-color: #6B8E4E;
+  }
+  
+  /* Apply beige theme background */
+  html.beige body {
+    background-color: var(--background-color);
+    background-image: linear-gradient(
+      to bottom,
+      var(--background-color),
+      var(--accent-light)
+    );
+    color: var(--text-color);
+  }
+  
+  /* Style adjustments for beige theme */
+  html.beige .container {
+    background-color: var(--card-bg);
+    box-shadow: 0 4px 15px var(--shadow-color);
+    border: 1px solid var(--accent-light);
+  }
+  
+  html.beige h1, 
+  html.beige h2 {
+    color: var(--secondary-color);
+    text-shadow: 1px 1px 2px var(--shadow-color);
+  }
+  
+  html.beige .btn-primary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: white;
+  }
+  
+  html.beige .btn-primary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+  }
+  
+  html.beige .btn-danger {
+    background-color: var(--error-color);
+    border-color: var(--error-color);
+  }
+  
+  html.beige .form-control {
+    border-color: var(--accent-light);
+    box-shadow: 0 0 5px var(--shadow-color);
+    color: var(--accent-dark);
+  }
+  
+  html.beige .form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 8px var(--shadow-color);
+  }
+  
+  html.beige .form-file {
+    border-color: var(--accent-light);
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  html.beige .journal-entry {
+    background-color: var(--card-bg);
+    border: 1px solid var(--accent-light);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  html.beige .journal-entry:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px var(--shadow-color);
+  }
+  
+  html.beige .text-muted {
+    color: var(--accent-color);
+  }
+  
+  html.beige .modal-content {
+    background-color: var(--background-color);
+    box-shadow: 0 0 25px var(--shadow-color);
+    border: 1px solid var(--accent-light);
+  }
+  
+  html.beige .close {
+    color: var(--secondary-color);
+  }
+  
+  html.beige .close:hover {
+    color: var(--accent-color);
+  }
+  
+  html.beige .btn-link {
+    color: var(--secondary-color);
+  }
+  
+  html.beige .btn-link:hover {
+    color: var(--accent-color);
+  }
+  
+  /* Bottom navigation specific styles */
+  html.beige .bottom-navigation {
+    background-color: var(--background-color);
+    border-top: 1px solid var(--accent-light);
+  }
+  
+  html.beige .nav-item.active {
+    color: var(--secondary-color);
+  }
+  
+  html.beige .nav-item {
+    color: var(--accent-color);
+  }

@@ -6,6 +6,7 @@ const ThemeSwitcher = ({ currentTheme, setCurrentTheme }) => {
     { name: 'dark', icon: '🌙', bgColor: 'bg-gray-800', textColor: 'text-white' },
     { name: 'pink', icon: '🌸', bgColor: 'bg-pink-200', textColor: 'text-pink-800' },
     { name: 'modern', icon: '💎', bgColor: 'bg-indigo-800', textColor: 'text-white' },
+    { name: 'beige', icon: '🍂', bgColor: 'bg-amber-100', textColor: 'text-amber-800' }, // Added beige theme
   ];
 
   return (

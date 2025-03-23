@@ -11,7 +11,8 @@ const JournalFeed = ({ currentUser }) => {
   const [entries, setEntries] = useState([]);
   const [newEntry, setNewEntry] = useState({
     textEntry: '',
-    imageFile: null
+    imageFile: null,
+    publicStatus: false // Added for public/private toggle
   });
   const [loading, setLoading] = useState(false);
   const [entryLoading, setEntryLoading] = useState(true);
@@ -212,6 +213,54 @@ const JournalFeed = ({ currentUser }) => {
     });
   };
 
+  const togglePublicStatus = () => {
+    setNewEntry({
+      ...newEntry,
+      publicStatus: !newEntry.publicStatus
+    });
+  };
+
+  // Updated function to use the correct API endpoint
+  const handleToggleEntryPublicStatus = async (entryId, currentStatus) => {
+    try {
+      // Find the current entry
+      const entry = entries.find(e => e.id === entryId);
+      if (!entry) return;
+      
+      // Create DTO with updated public status
+      const journalEntryDTO = {
+        id: entry.id,
+        textEntry: entry.textEntry,
+        imageUrl: entry.imageUrl,
+        createdAt: entry.createdAt,
+        username: currentUser,
+        publicStatus: !currentStatus
+      };
+      
+      // Call the correct API endpoint
+      await axios.put(`${API_URL}/entry/status`, journalEntryDTO);
+      
+      // Update local state
+      setEntries(prevEntries => 
+        prevEntries.map(entry => 
+          entry.id === entryId 
+            ? { ...entry, publicStatus: !currentStatus } 
+            : entry
+        )
+      );
+      
+      // Update selected entry if it's the one being modified
+      if (selectedEntry && selectedEntry.id === entryId) {
+        setSelectedEntry({ ...selectedEntry, publicStatus: !currentStatus });
+      }
+      
+      setMessage(`Entry is now ${!currentStatus ? 'public' : 'private'}`);
+    } catch (error) {
+      console.error('Error toggling public status:', error);
+      setMessage('Failed to update entry status. Please try again.');
+    }
+  };
+
   const handleDeleteEntry = async (entryId) => {
     if (!window.confirm("Are you sure you want to delete this entry? This action cannot be undone.")) {
       return;
@@ -273,7 +322,8 @@ const JournalFeed = ({ currentUser }) => {
     const entryData = {
       textEntry: newEntry.textEntry,
       username: currentUser,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      publicStatus: newEntry.publicStatus // Include public status
     };
     
     const formData = new FormData();
@@ -294,7 +344,7 @@ const JournalFeed = ({ currentUser }) => {
 
         if (response.status === 200) {
           setMessage('Entry created successfully!');
-          setNewEntry({ textEntry: '', imageFile: null });
+          setNewEntry({ textEntry: '', imageFile: null, publicStatus: false });
           // Refresh entries
           fetchEntries();
         }
@@ -310,6 +360,7 @@ const JournalFeed = ({ currentUser }) => {
           textEntry: newEntry.textEntry,
           username: currentUser,
           createdAt: new Date().toISOString(),
+          publicStatus: newEntry.publicStatus,
           isPending: true
         };
         
@@ -334,7 +385,7 @@ const JournalFeed = ({ currentUser }) => {
         await requestSync();
         
         setMessage('Entry saved locally. Will sync when you reconnect.');
-        setNewEntry({ textEntry: '', imageFile: null });
+        setNewEntry({ textEntry: '', imageFile: null, publicStatus: false });
         
         // Update UI immediately
         setEntries([localEntry, ...entries]);
@@ -410,6 +461,49 @@ const JournalFeed = ({ currentUser }) => {
               className="form-control"
             />
           </div>
+          
+          {/* Public/Private Toggle */}
+          <div className="form-group" style={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            marginBottom: '15px'
+          }}>
+            <label className="toggle-label" style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer'
+            }}>
+              <div className="toggle-switch" style={{
+                position: 'relative',
+                display: 'inline-block',
+                width: '40px',
+                height: '20px',
+                backgroundColor: newEntry.publicStatus ? 'var(--primary-color)' : '#ccc',
+                borderRadius: '20px',
+                transition: 'all 0.3s',
+                marginRight: '10px'
+              }}>
+                <div className="toggle-knob" style={{
+                  position: 'absolute',
+                  top: '2px',
+                  left: newEntry.publicStatus ? '22px' : '2px',
+                  width: '16px',
+                  height: '16px',
+                  backgroundColor: 'white',
+                  borderRadius: '50%',
+                  transition: 'all 0.3s'
+                }}></div>
+              </div>
+              <input 
+                type="checkbox" 
+                checked={newEntry.publicStatus} 
+                onChange={togglePublicStatus} 
+                style={{ display: 'none' }}
+              />
+              Make this entry public
+            </label>
+          </div>
+          
           <button 
             type="submit" 
             className={`btn-primary bounce ${loading ? 'disabled' : ''}`}
@@ -437,7 +531,7 @@ const JournalFeed = ({ currentUser }) => {
                   <div style={{
                     position: 'absolute',
                     top: '10px',
-                    right: '10px',
+                    left: '10px',
                     backgroundColor: 'rgba(255, 152, 0, 0.2)',
                     padding: '3px 8px',
                     borderRadius: '10px',
@@ -502,6 +596,31 @@ const JournalFeed = ({ currentUser }) => {
               Created on: {new Date(selectedEntry.createdAt).toLocaleDateString()}
             </p>
             
+            {/* Public/Private Status Toggle */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '15px'
+            }}>
+              <button
+                onClick={() => handleToggleEntryPublicStatus(selectedEntry.id, selectedEntry.publicStatus)}
+                className={selectedEntry.publicStatus ? 'btn-danger' : 'btn-primary'}
+                style={{ marginRight: '10px' }}
+                disabled={loading || selectedEntry.isPending}
+              >
+                {selectedEntry.publicStatus ? 'Make Private' : 'Make Public'}
+              </button>
+              
+              <button
+                onClick={() => handleDeleteEntry(selectedEntry.id)}
+                className='btn-danger'
+                disabled={loading}
+              >
+                {loading ? 'Deleting...' : 'Delete Entry'}
+              </button>
+            </div>
+            
             {/* Show pending status in modal if applicable */}
             {selectedEntry.isPending && (
               <p style={{ 
@@ -514,17 +633,11 @@ const JournalFeed = ({ currentUser }) => {
                 This entry is pending synchronization and will be uploaded when you reconnect.
               </p>
             )}
-            
-            <button
-              onClick={() => handleDeleteEntry(selectedEntry.id)}
-              className='btn-danger'
-              disabled={loading}
-            >
-              {loading ? 'Deleting...' : 'Delete Entry'}
-            </button>
           </div>
         </div>
       )}
+      
+      <div style={{ height: '70px' }}></div> {/* Space for bottom navigation */}
     </div>
   );
 };

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getMessaging, getToken } from "firebase/messaging";
 
 const API_URL = 'https://mljapp.onrender.com/japp';
 
@@ -9,11 +10,41 @@ const Register = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: ''
+    password: '',
+    fcmToken: '' // Add fcmToken to form data
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Get FCM token on component mount
+  useEffect(() => {
+    const getFCMToken = async () => {
+      try {
+        if (typeof window !== 'undefined' && window.Notification) {
+          // Request notification permission
+          const permission = await Notification.requestPermission();
+          
+          if (permission === 'granted') {
+            // Get FCM token from Firebase
+            const messaging = getMessaging();
+            const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY
+            const token = await getToken(messaging, { vapidKey });
+            if (token) {
+              console.log("FCM Token obtained:", token);
+              setFormData(prev => ({ ...prev, fcmToken: token }));
+            } else {
+              console.log("No FCM token available");
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error getting FCM token:", error);
+      }
+    };
+
+    getFCMToken();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -31,7 +62,8 @@ const Register = () => {
       const response = await axios.post(`${API_URL}/create/User`, {
         username: formData.username,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        fcmToken: formData.fcmToken // Send FCM token to backend
       });
 
       if (response.status === 200) {

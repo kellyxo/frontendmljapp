@@ -3,52 +3,89 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './components/Login';
 import Register from './components/Register';
 import JournalFeed from './components/JournalFeed';
+import PublicFeed from './components/PublicFeed';
+import Friends from './components/Friends';
+import Chat from './components/Chat';
+import NotificationsPage from './components/NotificationsPage'; // Rename this to avoid confusion
 import Profile from './components/Profile';
 import ThemeSwitcher from './components/ThemeSwitcher';
+import BottomNavigation from './components/BottomNavigation';
+import FirebaseNotifications from './components/FirebaseNotifications';
+import axios from 'axios';
 import './App.css';
 import './ModernTheme.css';
+import './BeigeTheme.css'; // Import the new beige theme
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCXejjWN4iBlaHeu-aFR4avlYclIeGB_T4",
-  authDomain: "memory-lane-1efeb.firebaseapp.com",
-  projectId: "memory-lane-1efeb",
-  storageBucket: "memory-lane-1efeb.firebasestorage.app",
-  messagingSenderId: "497823584629",
-  appId: "1:497823584629:web:14f14faa4e02548eb7833c",
-  measurementId: "G-F6Z2TT2K3T"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-
 function App() {
   const [currentUser, setCurrentUser] = useState(localStorage.getItem('currentUser'));
-  const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'beige'); // Set default to beige
+  const [profilePic, setProfilePic] = useState("https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg");
   
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem('currentUser', currentUser);
+      // Fetch user profile to get their profile picture
+      fetchUserProfile();
     } else {
       localStorage.removeItem('currentUser');
     }
   }, [currentUser]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await axios.get(`https://mljapp.onrender.com/japp/getUser`, {
+        data: { username: currentUser }
+      });
+      
+      if (response.status === 200 && response.data && response.data.pfpUrl) {
+        setProfilePic(response.data.pfpUrl);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   useEffect(() => {
     document.documentElement.className = currentTheme;
     localStorage.setItem('theme', currentTheme);
   }, [currentTheme]);
 
-  const handleLogout = () => {
-    setCurrentUser(null);
+  const handleLogout = async () => {
+    try {
+      // Call the logout endpoint
+      await axios.put('https://mljapp.onrender.com/japp/logout/${currentUser}');
+      
+      // Clear user data from localStorage
+      localStorage.removeItem('currentUser');
+      
+      // Update the state to trigger redirects
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // You could show an error message to the user here
+      // But still clear the local state to "force" logout even if API fails
+      localStorage.removeItem('currentUser');
+      setCurrentUser(null);
+    }
   };
 
   return (
@@ -59,14 +96,23 @@ function App() {
         </div>
         
         {currentUser && (
-          <div className="profile-icon-container">
-            <img 
-              src="https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg" 
-              alt="Profile" 
-              className="profile-icon"
-              onClick={() => window.location.href = "/profile"}
-            />
-          </div>
+          <>
+            {/* Profile Icon in top right */}
+            <div className="profile-icon-container">
+              <img 
+                src={profilePic} 
+                alt="Profile" 
+                className="profile-icon"
+                onClick={() => window.location.href = "/profile"}
+              />
+            </div>
+            
+            {/* Initialize Firebase notifications with fixed component */}
+            <FirebaseNotifications currentUser={currentUser} app={app} />
+            
+            {/* Bottom Navigation */}
+            <BottomNavigation currentUser={currentUser} />
+          </>
         )}
 
         <Routes>
@@ -78,6 +124,18 @@ function App() {
           } />
           <Route path="/journal" element={
             currentUser ? <JournalFeed currentUser={currentUser} /> : <Navigate to="/" />
+          } />
+          <Route path="/public-feed" element={
+            currentUser ? <PublicFeed currentUser={currentUser} /> : <Navigate to="/" />
+          } />
+          <Route path="/friends" element={
+            currentUser ? <Friends currentUser={currentUser} /> : <Navigate to="/" />
+          } />
+          <Route path="/chat" element={
+            currentUser ? <Chat currentUser={currentUser} /> : <Navigate to="/" />
+          } />
+          <Route path="/notifications" element={
+            currentUser ? <NotificationsPage currentUser={currentUser} /> : <Navigate to="/" />
           } />
           <Route path="/profile" element={
             currentUser ? <Profile currentUser={currentUser} handleLogout={handleLogout} /> : <Navigate to="/" />

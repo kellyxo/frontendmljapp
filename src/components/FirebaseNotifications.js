@@ -48,7 +48,9 @@ const FirebaseNotifications = ({ currentUser, app }) => {
               // Set up message handler for foreground notifications
               onMessage(messaging, (payload) => {
                 console.log('Message received:', payload);
-                showForegroundNotification(payload);
+                if (document.visibilityState === 'visible') {
+                  showForegroundNotification(payload);
+                }
               });
             } else {
               console.log("No registration token available");

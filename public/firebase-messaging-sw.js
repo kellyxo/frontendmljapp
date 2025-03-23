@@ -19,9 +19,43 @@ console.log('Firebase Messaging SW: Firebase initialized');
 const messaging = firebase.messaging();
 console.log('Firebase Messaging SW: Messaging initialized');
 
+// Store last few notifications to prevent duplicates
+self.recentNotifications = [];
+const MAX_RECENT_NOTIFICATIONS = 10;
+
 // Handle background messages
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  
+  // Generate a unique ID for this notification
+  const notificationId = payload.messageId || 
+                         payload.data?.notificationId || 
+                         `${payload.notification.title}-${Date.now()}`;
+  
+  // Check for duplicates (within last 3 seconds)
+  const now = Date.now();
+  const isDuplicate = self.recentNotifications.some(item => {
+    const sameId = item.id === notificationId;
+    const recentTimestamp = (now - item.timestamp) < 3000; // 3 seconds
+    return sameId && recentTimestamp;
+  });
+  
+  // If it's a duplicate, ignore it
+  if (isDuplicate) {
+    console.log('Duplicate notification detected, ignoring:', notificationId);
+    return;
+  }
+  
+  // Add to recent notifications list
+  self.recentNotifications.push({
+    id: notificationId,
+    timestamp: now
+  });
+  
+  // Keep only the most recent notifications
+  if (self.recentNotifications.length > MAX_RECENT_NOTIFICATIONS) {
+    self.recentNotifications = self.recentNotifications.slice(-MAX_RECENT_NOTIFICATIONS);
+  }
   
   // Extract notification details
   const notificationTitle = payload.notification.title || 'New Notification';
@@ -29,9 +63,13 @@ messaging.onBackgroundMessage((payload) => {
     body: payload.notification.body || 'You have a new notification',
     icon: '/favicon.ico', 
     badge: '/favicon.ico',
-    data: payload.data,
+    data: {
+      ...payload.data,
+      notificationId: notificationId // Include the ID in the data
+    },
     requireInteraction: true, // Makes notification stay until user interacts with it
-    vibrate: [200, 100, 200]  // Vibration pattern for mobile devices
+    vibrate: [200, 100, 200],  // Vibration pattern for mobile devices
+    tag: notificationId // Using tag helps prevent multiple similar notifications
   };
 
   console.log('Attempting to show notification:', { title: notificationTitle, options: notificationOptions });

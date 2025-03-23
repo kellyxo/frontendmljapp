@@ -1,9 +1,12 @@
 // public/service-worker.js
 
-// Names for our caches with updated versions
-const STATIC_CACHE = 'memorylane-static-v2';  // For app files (HTML, CSS, JS)
-const DATA_CACHE = 'memorylane-data-v2';      // For API responses
-const IMAGE_CACHE = 'memorylane-images-v2';   // For images
+// Version indicator - increment this with each release
+const APP_VERSION = 'v3';
+
+// Names for our caches with versioning
+const STATIC_CACHE = `memorylane-static-${APP_VERSION}`;
+const DATA_CACHE = `memorylane-data-${APP_VERSION}`;
+const IMAGE_CACHE = `memorylane-images-${APP_VERSION}`;
 
 // Lists of assets to cache immediately on install
 const STATIC_ASSETS = [
@@ -11,13 +14,12 @@ const STATIC_ASSETS = [
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
-  // Add paths to your CSS and JS files (these will be different based on your build)
-  // The build process will add hashes to these filenames
+  // Add paths to your CSS and JS files
 ];
 
 // Installation event - cache critical assets
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
+  console.log('Service Worker: Installing version', APP_VERSION);
   
   // Wait until the caching is complete
   event.waitUntil(
@@ -32,27 +34,46 @@ self.addEventListener('install', (event) => {
 
 // Activation event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
+  console.log('Service Worker: Activating version', APP_VERSION);
   
   event.waitUntil(
     // Get all cache names
     caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
+      return Promise.all([
+        // Clean up old caches
+        ...cacheNames.map(cacheName => {
           // If this cache is not one of our current ones, delete it
           if (
-            cacheName !== STATIC_CACHE && 
-            cacheName !== DATA_CACHE &&
-            cacheName !== IMAGE_CACHE
+            cacheName.includes('memorylane-') && 
+            !cacheName.includes(APP_VERSION)
           ) {
             console.log('Service Worker: Removing old cache:', cacheName);
             return caches.delete(cacheName);
           }
+        }),
+        
+        // Take control immediately
+        self.clients.claim(),
+        
+        // Send update notification to clients
+        self.clients.matchAll().then(clients => {
+          clients.forEach(client => {
+            client.postMessage({
+              type: 'APP_UPDATED',
+              version: APP_VERSION
+            });
+          });
         })
-      );
+      ]);
     })
-    .then(() => self.clients.claim()) // Take control immediately
   );
+});
+
+// Message handler for update control
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Fetch event - intercept network requests
@@ -61,17 +82,36 @@ self.addEventListener('fetch', (event) => {
   
   // Only attempt to cache GET requests
   if (event.request.method !== 'GET') {
-    // For non-GET requests, just pass through to the network without caching
     event.respondWith(fetch(event.request));
     return;
   }
   
-  // Handle API requests (to your backend)
-  if (event.request.url.includes('/japp/')) {
+  // HTML and App Shell - network first for faster updates
+  if (url.pathname === '/' || 
+      url.pathname.endsWith('.html') || 
+      url.pathname.includes('/static/js/')) {
+    
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Cache the fresh response
+          const responseClone = response.clone();
+          caches.open(STATIC_CACHE).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(event.request);
+        })
+    );
+  }
+  // API requests - network first with cache fallback
+  else if (event.request.url.includes('/japp/')) {
     console.log('Service Worker: Fetching API data', event.request.url);
     
     event.respondWith(
-      // Network-first strategy for API requests
       fetch(event.request)
         .then(response => {
           // If we got a valid response, clone it and store in cache
@@ -90,7 +130,7 @@ self.addEventListener('fetch', (event) => {
         })
     );
   } 
-  // Handle image requests - cache-first strategy
+  // Images - cache first for performance
   else if (
     event.request.url.match(/\.(jpg|jpeg|png|gif|svg|webp)$/) ||
     event.request.destination === 'image'
@@ -120,30 +160,21 @@ self.addEventListener('fetch', (event) => {
       })
     );
   } 
-  // Handle other requests (static assets) - cache-first strategy
+  // Other static assets - cache first with network update
   else {
     event.respondWith(
       caches.match(event.request).then(cachedResponse => {
         // Return cached response if available
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        
-        // Otherwise fetch from network
-        return fetch(event.request).then(response => {
-          // Don't cache if response is not valid
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          
-          // Cache the fetched response
-          const responseClone = response.clone();
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          // Cache the new response for next time
           caches.open(STATIC_CACHE).then(cache => {
-            cache.put(event.request, responseClone);
+            cache.put(event.request, networkResponse.clone());
           });
-          
-          return response;
+          return networkResponse;
         });
+        
+        // Return the cached version immediately, but update cache for next time
+        return cachedResponse || fetchPromise;
       })
     );
   }

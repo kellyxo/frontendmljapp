@@ -60,6 +60,55 @@ function App() {
       localStorage.removeItem("currentUser");
     }
   }, [currentUser]);
+useEffect(() => {
+  // Service worker update detection and handling
+  if ('serviceWorker' in navigator) {
+    // Check for updates periodically
+    const checkForUpdates = () => {
+      navigator.serviceWorker.ready.then(registration => {
+        console.log("Checking for service worker updates...");
+        registration.update();
+      });
+    };
+    
+    // Check for updates immediately and then every 15 minutes
+    checkForUpdates();
+    const updateInterval = setInterval(checkForUpdates, 15 * 60 * 1000);
+    
+    // Listen for update messages from service worker
+    const messageHandler = (event) => {
+      if (event.data && event.data.type === 'APP_UPDATED') {
+        console.log('New app version available:', event.data.version);
+        
+        // Show update notification to user
+        // You can use a custom UI component instead of window.confirm
+        if (window.confirm('A new version of Memory Lane is available. Update now?')) {
+          navigator.serviceWorker.ready.then(registration => {
+            if (registration.waiting) {
+              // Send skip waiting message to activate the new service worker
+              registration.waiting.postMessage({ action: 'SKIP_WAITING' });
+            }
+            // Reload the page to use the new version
+            window.location.reload();
+          });
+        }
+      }
+    };
+    
+    navigator.serviceWorker.addEventListener('message', messageHandler);
+    
+    // Handle service worker state changes
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('Service worker controller changed - page will reload');
+      window.location.reload();
+    });
+    
+    return () => {
+      clearInterval(updateInterval);
+      navigator.serviceWorker.removeEventListener('message', messageHandler);
+    };
+  }
+}, []);
 
   const fetchUserProfile = async () => {
     try {

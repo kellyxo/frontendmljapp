@@ -74,14 +74,14 @@ messaging.onBackgroundMessage((payload) => {
 
   console.log('Attempting to show notification:', { title: notificationTitle, options: notificationOptions });
   
-  // Return a promise from showNotification for proper error handling
-  return self.registration.showNotification(notificationTitle, notificationOptions)
-    .then(() => {
-      console.log('Notification displayed successfully');
-    })
-    .catch(error => {
-      console.error('Error displaying notification:', error);
-    });
+  // // Return a promise from showNotification for proper error handling
+  // return self.registration.showNotification(notificationTitle, notificationOptions)
+  //   .then(() => {
+  //     console.log('Notification displayed successfully');
+  //   })
+  //   .catch(error => {
+  //     console.error('Error displaying notification:', error);
+  //   });
 });
 
 // Notification click handler

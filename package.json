@@ -3,9 +3,6 @@
   "version": "1.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
     "axios": "^1.4.0",
     "bootstrap": "^5.3.3",
     "firebase": "^11.4.0",
@@ -21,7 +18,7 @@
     "workbox-precaching": "^7.3.0"
   },
   "scripts": {
-    "start": "PORT=1000 react-scripts --max-old-space-size=1024 start",
+    "start": "PORT=1000 react-scripts --max-old-space-size=512 start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -45,7 +42,10 @@
     ]
   },
   "devDependencies": {
-    "workbox-webpack-plugin": "^7.3.0"
+    "workbox-webpack-plugin": "^7.3.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
   },
   "description": "Journal app to save your photos and thoughts",
   "main": "index.js",

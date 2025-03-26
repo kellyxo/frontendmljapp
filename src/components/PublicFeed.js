@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import { HeartFill } from 'react-bootstrap-icons';
+
+
 
 const API_URL = 'https://mljapp.onrender.com/japp';
 
@@ -58,6 +62,76 @@ const PublicFeed = ({ currentUser }) => {
       fetchPublicEntries();
     }
   };
+  const handleToggleEntryPublicStatus = async (entryId, currentStatus) => {
+    try {
+      // Find the current entry
+      const entry = publicEntries.find(e => e.id === entryId);
+      if (!entry) return;
+      
+      // Create DTO with updated public status
+      const journalEntryDTO = {
+        id: entry.id,
+        textEntry: entry.textEntry,
+        imageUrl: entry.imageUrl,
+        createdAt: entry.createdAt,
+        username: currentUser,
+        publicStatus: !currentStatus
+      };
+      
+      // Call the  API endpoint
+      await axios.put(`${API_URL}/entry/status`, journalEntryDTO);
+      
+    
+    
+      // Update selected entry if it's the one being modified
+      if (selectedEntry && selectedEntry.id === entryId) {
+        setSelectedEntry({ ...selectedEntry, publicStatus: !currentStatus });
+      }
+      
+      setMessage(`Entry is now ${!currentStatus ? 'public' : 'private'}`);
+    } catch (error) {
+      console.error('Error toggling public status:', error);
+      setMessage('Failed to update entry status. Please try again.');
+    }
+  };
+  //handle like 
+  const handleLike = async (entryId) => {
+    try {
+      const entry = publicEntries.find(e => e.id === entryId);
+      if (!entry) return;
+  
+      const journalEntryDTO = {
+        id: entry.id,
+        textEntry: entry.textEntry,
+        imageUrl: entry.imageUrl,
+        createdAt: entry.createdAt,
+        username: currentUser,
+        publicStatus: entry.publicStatus
+      };
+  
+      const response = await axios.put(`${API_URL}/like/entry/${currentUser}`, journalEntryDTO);
+  
+      // Update only the specific entry
+      const updatedEntries = publicEntries.map(e => 
+        e.id === entryId 
+          ? { ...e, likeCount: response.data.likeCount } 
+          : e
+      );
+      setPublicEntries(updatedEntries);
+  
+      // If a modal is open, update the selected entry
+      if (selectedEntry && selectedEntry.id === entryId) {
+        setSelectedEntry({
+          ...selectedEntry,
+          likeCount: response.data.likeCount
+        });
+      }
+    } catch (error) {
+      console.error('Error liking entry:', error);
+      toast.error('Could not like the entry. Please try again.');
+    }
+  };
+
 
   // Fetch public entries from all users
   const fetchPublicEntries = async () => {
@@ -354,15 +428,17 @@ const PublicFeed = ({ currentUser }) => {
             }}>
               <button 
                 className="btn-primary"
+                onClick={() => handleLike(selectedEntry.id)}
                 style={{ padding: '5px 10px' }}
-
               >
-                ❤️ Like ({selectedEntry.likeCount  || 0 })
+                <HeartFill color="red" size={16} /> 
+                Like ({selectedEntry.likeCount  || 0 })
               </button>
               
               {selectedEntry.username === currentUser && (
                 <button
                   className="btn-danger"
+                  onClick={() => handleToggleEntryPublicStatus(selectedEntry.id, selectedEntry.publicStatus)}
                   style={{ padding: '5px 10px' }}
                 >
                   Make Private

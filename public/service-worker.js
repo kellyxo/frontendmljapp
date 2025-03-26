@@ -1,7 +1,6 @@
 // public/service-worker.js
 
-// Version indicator - increment this with each release
-const APP_VERSION = 'v3';
+const APP_VERSION = 'v1.1';
 
 // Names for our caches with versioning
 const STATIC_CACHE = `memorylane-static-${APP_VERSION}`;

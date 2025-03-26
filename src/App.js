@@ -5,6 +5,8 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Login from "./components/Login";
 import Register from "./components/Register";
 import JournalFeed from "./components/JournalFeed";
@@ -154,6 +156,7 @@ useEffect(() => {
   };
 
   return (
+
     <Router>
       <div className="app-container">
         <div className="theme-switcher-container">
@@ -267,7 +270,9 @@ useEffect(() => {
                 <Navigate to="/" />
               )
             }
+            
           />
+         <ToastContainer/>
         </Routes>
       </div>
     </Router>

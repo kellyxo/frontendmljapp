@@ -98,7 +98,9 @@ const PublicFeed = ({ currentUser }) => {
       }
     } catch (error) {
       console.error('Error liking entry:', error);
-      toast.error('Could not like the entry. Please try again.');
+      toast.error('Could not like the entry. Please try again.', {
+        autoClose: 3000 // close aftewr 3 secs
+      });
     }
   };
 

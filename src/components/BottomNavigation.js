@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { 
+  JournalText, 
+  Globe, 
+  ChatText, 
+  People, 
+  Bell 
+} from 'react-bootstrap-icons';
+
 
 const API_URL = 'https://mljapp.onrender.com/japp';
 
@@ -35,11 +43,11 @@ const BottomNavigation = ({ currentUser }) => {
   
   // Navigation items
   const navItems = [
-    { path: '/journal', icon: '📝', label: 'Journal' },
-    { path: '/public-feed', icon: '🌎', label: 'Feed' },
-    { path: '/chat', icon: '💬', label: 'Chat' },
-    { path: '/friends', icon: '👥', label: 'Friends' },
-    { path: '/notifications', icon: '🔔', label: 'Notifications', count: unreadCount }
+    { path: '/journal', icon: JournalText, label: 'Journal' },
+    { path: '/public-feed', icon: Globe, label: 'Feed' },
+    { path: '/chat', icon: ChatText, label: 'Chat' },
+    { path: '/friends', icon: People, label: 'Friends' },
+    { path: '/notifications', icon: Bell, label: 'Notifications', count: unreadCount }
   ];
   
   return (
@@ -75,7 +83,7 @@ const BottomNavigation = ({ currentUser }) => {
           }}
         >
           <div className="icon" style={{ fontSize: '1.5rem', marginBottom: '4px' }}>
-            {item.icon}
+          {React.createElement(item.icon, { size: 24 })}
           </div>
           <div className="label" style={{ fontSize: '0.7rem', textAlign: 'center' }}>
             {item.label}

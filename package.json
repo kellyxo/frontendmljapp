@@ -46,5 +46,9 @@
   },
   "devDependencies": {
     "workbox-webpack-plugin": "^7.3.0"
-  }
+  },
+  "description": "Journal app to save your photos and thoughts",
+  "main": "index.js",
+  "author": "Kellyxo",
+  "license": "ISC"
 }

@@ -80,14 +80,13 @@ const PublicFeed = ({ currentUser }) => {
   
       const response = await axios.put(`${API_URL}/like/entry/${currentUser}`, journalEntryDTO);
   
-      // Update only the specific entry
-      const updatedEntries = publicEntries.map(e => 
-        e.id === entryId 
-          ? { ...e, likeCount: response.data.likeCount } 
-          : e
+      setPublicEntries(prevEntries => 
+        prevEntries.map(e => e.id === entryId ? { ...e, likeCount: response.data.likeCount } : e)
       );
-      setPublicEntries(updatedEntries);
-      setFriendsEntries(updatedEntries);
+      
+      setFriendsEntries(prevEntries => 
+        prevEntries.map(e => e.id === entryId ? { ...e, likeCount: response.data.likeCount } : e)
+      );
   
       // If a modal is open, update the selected entry
       if (selectedEntry && selectedEntry.id === entryId) {

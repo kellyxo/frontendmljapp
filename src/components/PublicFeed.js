@@ -62,38 +62,7 @@ const PublicFeed = ({ currentUser }) => {
       fetchPublicEntries();
     }
   };
-  // const handleToggleEntryPublicStatus = async (entryId, currentStatus) => {
-  //   try {
-  //     // Find the current entry
-  //     const entry = publicEntries.find(e => e.id === entryId);
-  //     if (!entry) return;
-      
-  //     // Create DTO with updated public status
-  //     const journalEntryDTO = {
-  //       id: entry.id,
-  //       textEntry: entry.textEntry,
-  //       imageUrl: entry.imageUrl,
-  //       createdAt: entry.createdAt,
-  //       username: currentUser,
-  //       publicStatus: !currentStatus
-  //     };
-      
-  //     // Call the  API endpoint
-  //     await axios.put(`${API_URL}/entry/status`, journalEntryDTO);
-      
-    
-    
-  //     // Update selected entry if it's the one being modified
-  //     if (selectedEntry && selectedEntry.id === entryId) {
-  //       setSelectedEntry({ ...selectedEntry, publicStatus: !currentStatus });
-  //     }
-      
-  //     setMessage(`Entry is now ${!currentStatus ? 'public' : 'private'}`);
-  //   } catch (error) {
-  //     console.error('Error toggling public status:', error);
-  //     setMessage('Failed to update entry status. Please try again.');
-  //   }
-  // };
+
   //handle like 
   const handleLike = async (entryId) => {
     try {

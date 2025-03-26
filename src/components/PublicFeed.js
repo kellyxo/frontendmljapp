@@ -118,6 +118,7 @@ const PublicFeed = ({ currentUser }) => {
           : e
       );
       setPublicEntries(updatedEntries);
+      setFriendsEntries(updatedEntries);
   
       // If a modal is open, update the selected entry
       if (selectedEntry && selectedEntry.id === entryId) {

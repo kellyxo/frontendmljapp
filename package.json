@@ -21,7 +21,7 @@
     "workbox-precaching": "^7.3.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "PORT=1000 react-scripts --max-old-space-size=1024 start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -45,8 +45,7 @@
     ]
   },
   "devDependencies": {
-    "workbox-webpack-plugin": "^7.3.0",
-    "react-scripts": "^5.0.1"
+    "workbox-webpack-plugin": "^7.3.0"
   },
   "description": "Journal app to save your photos and thoughts",
   "main": "index.js",

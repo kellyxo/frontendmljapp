@@ -21,7 +21,7 @@
     "workbox-precaching": "^7.3.0"
   },
   "scripts": {
-    "start": " PORT=1000 node --max-old-space-size=1024 react-scripts start",
+    "start": " PORT=1000 react-scripts --max-old-space-size=1024 start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

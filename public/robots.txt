@@ -1,3 +1,4 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Disallow:
+google-site-verification=e8vR0HtNOg5MSRrWhDNBclTEYHzeMfLA9kXoyxNTV08

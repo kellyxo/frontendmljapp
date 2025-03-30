@@ -329,19 +329,16 @@ const Chat = ({ currentUser }) => {
       
       <div className="chat-container" style={{ 
         display: 'flex', 
-        flexDirection: window.innerWidth < 768 ? 'column' : 'row',
-        height: window.innerHeight <768 ? 'auto' :'70vh',
+        height: '70vh',
         boxShadow: '0 0 15px var(--shadow-color)',
         borderRadius: '15px',
         overflow: 'hidden'
       }}>
         {/* Friends sidebar */}
         <div className="friends-sidebar" style={{ 
-          width: window.innerWidth < 768? '100%' : '30%', 
-          height: window.innerHeight< 768 ? '30vh': 'auto',
+          width: '30%', 
           backgroundColor: 'var(--card-bg)',
-          borderRight: window.innerWidth < 768 ? 'none' : '1px solid var(--shadow-color)',
-          borderBottom: window.innerWidth < 768 ? '1px solid var(--shadow-color)' : 'none',
+          borderRight: '1px solid var(--shadow-color)',
           overflowY: 'auto'
         }}>
           <h2 style={{ padding: '15px', borderBottom: '1px solid var(--shadow-color)' }}>Friends</h2>
@@ -378,8 +375,8 @@ const Chat = ({ currentUser }) => {
                       border: selectedFriend === friendUsername 
                         ? '2px solid var(--primary-color)' 
                         : 'none',
-                      objectFit:'cover',
-                      objectPosition:'center',
+                      objectFit:'cover',                      
+                      objectPosition:'center',                       
                       boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }}
                   />
@@ -392,8 +389,7 @@ const Chat = ({ currentUser }) => {
         
         {/* Chat area */}
         <div className="chat-area" style={{ 
-         width: window.innerWidth < 768 ? '100%' : '70%', 
-         height: window.innerWidth < 768 ? '60vh' : 'auto',
+          width: '70%', 
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: 'var(--background-color)'
@@ -411,7 +407,10 @@ const Chat = ({ currentUser }) => {
                 <img 
                   src={getFriendProfilePic(selectedFriend)} 
                   alt="Profile" 
-                  style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '10px' , objectFit:"cover"}}
+                  style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '10px',
+                    objectFit:'cover',                      
+                    objectPosition:'center',                       
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                 />
                 <h3 style={{ margin: 0 }}>{selectedFriend}</h3>
                 <span style={{ 

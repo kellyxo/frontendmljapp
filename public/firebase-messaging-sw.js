@@ -28,6 +28,7 @@ messaging.onBackgroundMessage((payload) => {
     badge: '/favicon.ico',
     requireInteraction: true, // Makes notification stay until user interacts with it
     vibrate: [200, 100, 200],  // Vibration pattern for mobile 
+    sound: "default"
   };
 
   return self.registration.showNotification(notificationTitle, notificationOptions);

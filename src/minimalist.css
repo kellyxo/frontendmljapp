@@ -1,0 +1,237 @@
+/* Blood theme - Dark and red color scheme */
+
+:root {
+    --primary-color: #E01E1E; /* Vibrant red */
+    --secondary-color: #AA0000; /* Darker red */
+    --background-color: #0F0F0F; /* Dark background */
+    --text-color: #EEEEEE; /* Light text */
+    --shadow-color: rgba(224, 30, 30, 0.3); /* Red shadow */
+    --card-bg: rgba(25, 25, 25, 0.9); /* Translucent dark gray */
+    --primary-color-rgb: 224, 30, 30; /* RGB values for primary color */
+    
+    /* Define variables for new accent colors */
+    --accent-color: #333333; /* Dark gray accent */
+    --accent-light: #444444; /* Light accent for highlights */
+    --accent-dark: #CCCCCC; /* Light gray for text highlights */
+    --error-color: #FF4040; /* Bright red for errors */
+    --success-color: #40A040; /* Green for success */
+  }
+  
+  /* Theme Classes */
+  html.blood {
+    --primary-color: #E01E1E;
+    --secondary-color: #AA0000;
+    --background-color: #0F0F0F;
+    --text-color: #EEEEEE;
+    --shadow-color: rgba(224, 30, 30, 0.3);
+    --card-bg: rgba(25, 25, 25, 0.9);
+    --primary-color-rgb: 224, 30, 30;
+    --accent-color: #333333;
+    --accent-light: #444444;
+    --accent-dark: #CCCCCC;
+    --error-color: #FF4040;
+    --success-color: #40A040;
+  }
+  
+  /* Apply blood theme background */
+  html.blood body {
+    background-color: var(--background-color);
+    background-image: linear-gradient(
+      to bottom,
+      var(--background-color),
+      #1A1A1A
+    );
+    color: var(--text-color);
+  }
+  
+  /* Style adjustments for blood theme */
+  html.blood .container {
+    background-color: var(--card-bg);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--accent-light);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+  }
+  
+  html.blood h1, 
+  html.blood h2 {
+    color: var(--primary-color);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.05em;
+  }
+  
+  html.blood .btn-primary {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    color: white;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: all 0.3s ease;
+  }
+  
+  html.blood .btn-primary:hover {
+    background: linear-gradient(45deg, #FF2424, var(--primary-color));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px var(--shadow-color);
+  }
+  
+  html.blood .btn-danger {
+    background-color: var(--accent-color);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  html.blood .btn-danger:hover {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  html.blood .form-control {
+    background-color: rgba(20, 20, 20, 0.8);
+    border: 1px solid var(--accent-light);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    color: var(--text-color);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  
+  html.blood .form-control:focus {
+    background-color: rgba(30, 30, 30, 0.9);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 8px var(--shadow-color);
+  }
+  
+  html.blood .form-file {
+    border-color: var(--accent-light);
+    background-color: rgba(20, 20, 20, 0.8);
+  }
+  
+  html.blood .journal-entry {
+    background-color: var(--card-bg);
+    border: 1px solid var(--accent-light);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  html.blood .journal-entry:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    border-color: rgba(224, 30, 30, 0.3);
+  }
+  
+  html.blood .journal-text {
+    color: var(--text-color);
+    line-height: 1.7;
+  }
+  
+  html.blood .text-muted {
+    color: #999999 !important;
+  }
+  
+  html.blood .modal-content {
+    background-color: var(--card-bg);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--accent-light);
+    border-radius: 8px;
+  }
+  
+  html.blood .close {
+    color: var(--primary-color);
+    opacity: 0.8;
+  }
+  
+  html.blood .close:hover {
+    color: var(--error-color);
+    opacity: 1;
+  }
+  
+  html.blood .btn-link {
+    color: var(--primary-color);
+  }
+  
+  html.blood .btn-link:hover {
+    color: var(--error-color);
+  }
+  
+  /* Bottom navigation specific styles */
+  html.blood .bottom-navigation {
+    background-color: rgba(15, 15, 15, 0.95);
+    border-top: 1px solid var(--accent-light);
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 10px 0;
+  }
+  
+  html.blood .nav-item.active {
+    color: var(--primary-color) !important;
+    opacity: 1 !important;
+  }
+  
+  html.blood .nav-item {
+    color: var(--text-color) !important;
+    opacity: 0.7 !important;
+  }
+  
+  html.blood .nav-item:hover {
+    opacity: 0.9 !important;
+  }
+  
+  /* Notification badge */
+  html.blood .nav-item div[style*="backgroundColor"] {
+    background-color: var(--primary-color) !important;
+  }
+  
+  /* Active indicator */
+  html.blood .nav-item div[style*="bottom: -10px"] {
+    background-color: var(--primary-color) !important;
+  }
+  
+  /* Custom scrollbar for blood theme */
+  html.blood ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  html.blood ::-webkit-scrollbar-track {
+    background: rgba(20, 20, 20, 0.8);
+    border-radius: 4px;
+  }
+  
+  html.blood ::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+  }
+  
+  html.blood ::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+  }
+  
+  /* Remove flower icons */
+  html.blood .flower-icon {
+    display: none;
+  }
+  
+  /* Navbar */
+  html.blood .navbar {
+    background-color: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--accent-light);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Journal image */
+  html.blood .journal-image {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: 1px solid var(--accent-light);
+  }

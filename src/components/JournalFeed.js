@@ -543,7 +543,7 @@ const JournalFeed = ({ currentUser }) => {
                 )}
                 
                 {/* Use localImageUrl for offline-created entries */}
-                {entry.localImageUrl && (
+                {entry.localImageUrl &&(
                   <img 
                     src={entry.localImageUrl} 
                     alt="Journal Entry" 
@@ -551,7 +551,7 @@ const JournalFeed = ({ currentUser }) => {
                   />
                 )}
                 
-                {entry.imageUrl && !entry.localImageUrl && (
+                {entry.imageUrl && entry.imageUrl.trim() !== "" && !entry.localImageUrl &&(
                   <img 
                     src={entry.imageUrl} 
                     alt="Journal Entry" 
@@ -583,7 +583,7 @@ const JournalFeed = ({ currentUser }) => {
               />
             )}
             
-            {selectedEntry.imageUrl && !selectedEntry.localImageUrl && (
+            {selectedEntry.imageUrl && selectedEntry.imageUrl.trim() !== "" && !selectedEntry.localImageUrl && (
               <img 
                 src={selectedEntry.imageUrl} 
                 alt="Journal Entry" 

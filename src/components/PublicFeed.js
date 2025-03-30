@@ -107,116 +107,31 @@ const PublicFeed = ({ currentUser }) => {
   // Fetch public entries from all users
   const fetchPublicEntries = async () => {
     setLoading(true);
-    try {
-      // Get all users (or we could limit this in the future)
-      const usersResponse = await axios.get(`${API_URL}/allusers`);
-      
-      if (usersResponse.status === 200) {
-        const allUsers = usersResponse.data;
-        let allPublicEntries = [];
-        
-        // Filter out the current user from the list
-        const otherUsers = allUsers.filter(user => user.username !== currentUser);
-        
-        // For each user, fetch their entries
-        for (const user of otherUsers) {
-          try {
-            // Skip users who are friends (we'll handle them in fetchFriendsEntries)
-            if (friends.includes(user.username)) continue;
-            
-            const entriesResponse = await axios.get(`${API_URL}/entries/${user.username}`);
-            if (entriesResponse.status === 200) {
-              // Filter only public entries
-              const publicEntriesOnly = entriesResponse.data.filter(entry => entry.publicStatus);
-              
-              // Add username to each entry for display
-              const entriesWithUsername = publicEntriesOnly.map(entry => ({
-                ...entry,
-                username: user.username
-              }));
-              
-              allPublicEntries = [...allPublicEntries, ...entriesWithUsername];
-            }
-          } catch (error) {
-            console.error(`Error fetching entries for ${user.username}:`, error);
-            // Continue with next user on error
-          }
-        }
-        
-        // Sort by date
-        const sortedEntries = allPublicEntries.sort((a, b) => 
-          new Date(b.createdAt) - new Date(a.createdAt)
+    try{
+      const response = await axios.get(`${API_URL}/entriesPublic/all`);
+
+      if(response.status === 200){
+        const sortedEntries = response.data.sort((a,b) =>
+        new Date(b.createdAt) - new Date(a.createdAt)
         );
-        
         setPublicEntries(sortedEntries);
+
       }
-    } catch (error) {
-      console.error('Error fetching public entries:', error);
+    } catch(error) {
+      console.log("Error fetching public entries:", error);
       setError('Failed to load public entries.');
-      setPublicEntries([]); // Set empty array on error
-    } finally {
+      setPublicEntries([]);
+    } finally{
       setLoading(false);
     }
   };
 
   // Fetch entries from friends
   const fetchFriendsEntries = async (friendsList) => {
-    setLoading(true);
-    try {
-      let allFriendsEntries = [];
-      
-      // Also get the current user's public entries
-      try {
-        const currentUserResponse = await axios.get(`${API_URL}/entries/${currentUser}`);
-        if (currentUserResponse.status === 200) {
-          // Filter only public entries
-          const publicEntriesOnly = currentUserResponse.data.filter(entry => entry.publicStatus);
-          
-          // Add username to each entry for display
-          const entriesWithUsername = publicEntriesOnly.map(entry => ({
-            ...entry,
-            username: currentUser
-          }));
-          
-          allFriendsEntries = [...allFriendsEntries, ...entriesWithUsername];
-        }
-      } catch (error) {
-        console.error(`Error fetching entries for current user:`, error);
-      }
-      
-      // For each friend, fetch their public entries
-      for (const friend of friendsList) {
-        try {
-          const response = await axios.get(`${API_URL}/entries/${friend}`);
-          if (response.status === 200) {
-            // Filter only public entries
-            const publicEntriesOnly = response.data.filter(entry => entry.publicStatus);
-            
-            // Add friend's username to each entry for display
-            const entriesWithUsername = publicEntriesOnly.map(entry => ({
-              ...entry,
-              username: friend
-            }));
-            
-            allFriendsEntries = [...allFriendsEntries, ...entriesWithUsername];
-          }
-        } catch (error) {
-          console.error(`Error fetching entries for ${friend}:`, error);
-        }
-      }
-      
-      // Sort by date
-      const sortedEntries = allFriendsEntries.sort((a, b) => 
-        new Date(b.createdAt) - new Date(a.createdAt)
-      );
-      
-      setFriendsEntries(sortedEntries);
-    } catch (error) {
-      console.error('Error fetching friends entries:', error);
-      setError('Failed to load friends\' entries.');
-    } finally {
-      setLoading(false);
-    }
+    const friendsEntries = publicEntries.filter(entry =>
+      friendsList.includes(entry.username) || entry.username === currentUser
+    );
+    setFriendsEntries(friendsEntries);
   };
 
   // Combine public and friends entries, removing duplicates
@@ -237,6 +152,8 @@ const PublicFeed = ({ currentUser }) => {
   const openEntryModal = (entry) => {
     setSelectedEntry(entry);
     setModalVisible(true);
+    
+
   };
 
   const closeModal = () => {
@@ -317,7 +234,7 @@ const PublicFeed = ({ currentUser }) => {
                 {entry.username === currentUser ? 'You' : entry.username}
               </div>
               
-              {entry.imageUrl && (
+              {entry.imageUrl && entry.imageUrl.trim() !== "" &&(
                 <img 
                   src={entry.imageUrl} 
                   alt="Journal Entry" 
@@ -381,7 +298,7 @@ const PublicFeed = ({ currentUser }) => {
               </span>
             </div>
             
-            {selectedEntry.imageUrl && (
+            {selectedEntry.imageUrl && selectedEntry.imageUrl.trim() !== "" && (
               <img 
                 src={selectedEntry.imageUrl} 
                 alt="Journal Entry" 

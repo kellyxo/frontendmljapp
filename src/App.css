@@ -22,13 +22,13 @@ html.light {
 }
 
 html.dark {
-  --primary-color: #e83e8c;
-  --secondary-color: #d30f70;
-  --background-color: #2a2a2a;
-  --background-image: url('https://wallpaperaccess.com/full/1723634.jpg');
-  --text-color: #ff9ec6;
-  --shadow-color: rgba(232, 62, 140, 0.4);
-  --card-bg: rgba(42, 42, 42, 0.85);
+  --primary-color: #0FA4AF; /* Bright turquoise from the image */
+  --secondary-color: #024950; /* Darker teal from the top right */
+  --background-color: #003135; /* Very dark teal from top right */
+  --text-color: #AFDDDE; /* Light turquoise for readability */
+  --shadow-color: rgba(15, 164, 175, 0.4); /* Shadow based on primary color */
+  --card-bg: rgba(2, 73, 80, 0.85); /* Semi-transparent darker teal */
+  --accent-color: #964734; /* Rust/copper accent from the image */
 }
 
 html.pink {
@@ -230,6 +230,7 @@ input.form-control:focus, textarea.form-control:focus {
   height: 100%;
   overflow: auto;
   background-color: rgba(0,0,0,0.4);
+  align-items: center ;
 }
 
 .modal-content {

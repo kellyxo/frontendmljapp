@@ -342,15 +342,6 @@ const Friends = ({ currentUser }) => {
                   />
                   <span>{requesterUsername}</span>
                 </div>
-                <div className="friend-actions" style={{ display: 'flex', gap: '10px' }}>
-                  <button 
-                    className="btn-primary"
-                    onClick={() => acceptFriendRequest(requesterUsername)}
-                    disabled={loading}
-                    style={{ padding: '5px 10px', fontSize: '14px' }}
-                  >
-                    Accept
-                  </button>
                   <button 
                     className="btn-danger"
                     onClick={() => cancelFriendRequest(requesterUsername)}
@@ -358,6 +349,15 @@ const Friends = ({ currentUser }) => {
                     style={{ padding: '5px 10px', fontSize: '14px' }}
                   >
                     Decline
+                  </button>
+                  <div className="friend-actions" style={{ display: 'flex', gap: '10px' }}>
+                  <button 
+                    className="btn-primary"
+                    onClick={() => acceptFriendRequest(requesterUsername)}
+                    disabled={loading}
+                    style={{ padding: '5px 10px', fontSize: '14px' }}
+                  >
+                    Accept
                   </button>
                 </div>
               </div>

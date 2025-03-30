@@ -22,6 +22,7 @@ import axios from "axios";
 import "./App.css";
 import "./ModernTheme.css";
 import "./BeigeTheme.css"; // Import the new beige theme
+import "./minimalist.css"
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";

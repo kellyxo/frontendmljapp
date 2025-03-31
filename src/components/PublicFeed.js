@@ -3,8 +3,6 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { HeartFill } from 'react-bootstrap-icons';
 
-
-
 const API_URL = 'https://mljapp.onrender.com/japp';
 
 const PublicFeed = ({ currentUser }) => {
@@ -17,11 +15,20 @@ const PublicFeed = ({ currentUser }) => {
   const [friends, setFriends] = useState([]);
   const [userProfiles, setUserProfiles] = useState({});
   
-  // Helper function to get a user's profile picture
-  const getUserProfilePic = (username) => {
-    if (userProfiles[username] && userProfiles[username].pfpUrl) {
-      return userProfiles[username].pfpUrl;
+  // Updated helper function to get a user's profile picture
+  // Now primarily using the userPfp field from the entry if available
+  const getUserProfilePic = (entry) => {
+    // First try to use the userPfp field directly from the entry
+    if (entry && entry.userPfp) {
+      return entry.userPfp;
     }
+    
+    // Fall back to the userProfiles cache if needed
+    if (entry && entry.username && userProfiles[entry.username] && userProfiles[entry.username].pfpUrl) {
+      return userProfiles[entry.username].pfpUrl;
+    }
+    
+    // Default image as last resort
     return "https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg";
   };
 
@@ -63,10 +70,11 @@ const PublicFeed = ({ currentUser }) => {
     }
   };
 
-  //handle like 
+  // Handle like 
   const handleLike = async (entryId) => {
     try {
-      const entry = publicEntries.find(e => e.id === entryId);
+      const entry = publicEntries.find(e => e.id === entryId) || 
+                   friendsEntries.find(e => e.id === entryId);
       if (!entry) return;
   
       const journalEntryDTO = {
@@ -75,7 +83,8 @@ const PublicFeed = ({ currentUser }) => {
         imageUrl: entry.imageUrl,
         createdAt: entry.createdAt,
         username: currentUser,
-        publicStatus: entry.publicStatus
+        publicStatus: entry.publicStatus,
+        // userPfp: entry.userPfp // Include the userPfp field
       };
   
       const response = await axios.put(`${API_URL}/like/entry/${currentUser}`, journalEntryDTO);
@@ -95,14 +104,53 @@ const PublicFeed = ({ currentUser }) => {
           likeCount: response.data.likeCount
         });
       }
+      
+      toast.success('Liked entry!', { autoClose: 2000 });
     } catch (error) {
       console.error('Error liking entry:', error);
       toast.error('Could not like the entry. Please try again.', {
-        autoClose: 3000 // close aftewr 3 secs
+        autoClose: 3000 // close after 3 secs
       });
     }
   };
 
+  // Make entry private
+  const makeEntryPrivate = async (entryId) => {
+    try {
+      const entry = publicEntries.find(e => e.id === entryId) || 
+                   friendsEntries.find(e => e.id === entryId);
+      if (!entry) return;
+      
+      const journalEntryDTO = {
+        id: entry.id,
+        textEntry: entry.textEntry,
+        imageUrl: entry.imageUrl,
+        createdAt: entry.createdAt,
+        username: currentUser,
+        publicStatus: false, // Set to private
+        // userPfp: entry.userPfp // Include the userPfp field
+      };
+      
+      await axios.put(`${API_URL}/entry/status`, journalEntryDTO);
+      
+      // Remove from displayed entries
+      setPublicEntries(prevEntries => 
+        prevEntries.filter(e => e.id !== entryId)
+      );
+      
+      setFriendsEntries(prevEntries => 
+        prevEntries.filter(e => e.id !== entryId)
+      );
+      
+      closeModal();
+      toast.success('Entry is now private', { autoClose: 2000 });
+    } catch (error) {
+      console.error('Error making entry private:', error);
+      toast.error('Could not update entry. Please try again.', {
+        autoClose: 3000
+      });
+    }
+  };
 
   // Fetch public entries from all users
   const fetchPublicEntries = async () => {
@@ -115,7 +163,6 @@ const PublicFeed = ({ currentUser }) => {
         new Date(b.createdAt) - new Date(a.createdAt)
         );
         setPublicEntries(sortedEntries);
-
       }
     } catch(error) {
       console.log("Error fetching public entries:", error);
@@ -152,8 +199,6 @@ const PublicFeed = ({ currentUser }) => {
   const openEntryModal = (entry) => {
     setSelectedEntry(entry);
     setModalVisible(true);
-    
-
   };
 
   const closeModal = () => {
@@ -172,7 +217,6 @@ const PublicFeed = ({ currentUser }) => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
-
   return (
     <div className="container fade-in">
       <h1 className="mb-4">Public Feed <i className="flower-icon">📝</i></h1>
@@ -234,7 +278,7 @@ const PublicFeed = ({ currentUser }) => {
                 {entry.username === currentUser ? 'You' : entry.username}
               </div>
               
-              {entry.imageUrl && entry.imageUrl.trim() !== "" &&(
+              {entry.imageUrl && entry.imageUrl.trim() !== "" && (
                 <img 
                   src={entry.imageUrl} 
                   alt="Journal Entry" 
@@ -286,7 +330,7 @@ const PublicFeed = ({ currentUser }) => {
               marginBottom: '15px'
             }}>
               <img 
-                src={getUserProfilePic(selectedEntry.username)} 
+                src={getUserProfilePic(selectedEntry)} 
                 alt="Profile" 
                 style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '10px' }}
               />
@@ -320,12 +364,13 @@ const PublicFeed = ({ currentUser }) => {
                 style={{ padding: '5px 10px' }}
               >
                 <HeartFill color="red" size={16} /> 
-                Like ({selectedEntry.likeCount  || 0 })
+                {selectedEntry.likeCount || 0}
               </button>
               
               {selectedEntry.username === currentUser && (
                 <button
                   className="btn-danger"
+                  onClick={() => makeEntryPrivate(selectedEntry.id)}
                   style={{ padding: '5px 10px' }}
                 >
                   Make Private

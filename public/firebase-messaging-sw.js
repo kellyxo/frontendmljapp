@@ -20,19 +20,19 @@ const messaging = firebase.messaging();
 console.log('Firebase Messaging SW: Messaging initialized');
 
 // Handle background messages
-messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.notification?.title || 'New Notification';
-  const notificationOptions = {
-    body: payload.notification?.body || 'You have a new notification',
-    icon: '/favicon.ico', 
-    badge: '/favicon.ico',
-    requireInteraction: true, // Makes notification stay until user interacts with it
-    vibrate: [200, 100, 200],  // Vibration pattern for mobile 
-    sound: "default"
-  };
+// messaging.onBackgroundMessage((payload) => {
+//   const notificationTitle = payload.notification?.title || 'New Notification';
+//   const notificationOptions = {
+//     body: payload.notification?.body || 'You have a new notification',
+//     icon: '/favicon.ico', 
+//     badge: '/favicon.ico',
+//     requireInteraction: true, // Makes notification stay until user interacts with it
+//     vibrate: [200, 100, 200],  // Vibration pattern for mobile 
+//     sound: "default"
+//   };
 
-  return self.registration.showNotification(notificationTitle, notificationOptions);
-});
+//   return self.registration.showNotification(notificationTitle, notificationOptions);
+// });
 
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {

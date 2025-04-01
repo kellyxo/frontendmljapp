@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import axios from 'axios';
+import { toast } from 'react-toastify'; // Import toast
 
 const API_URL = 'https://mljapp.onrender.com/japp';
 
@@ -36,7 +37,7 @@ const FirebaseNotifications = ({ currentUser, app }) => {
           
           // Get FCM token
           try {
-            const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY; // Replace with your actual VAPID key
+            const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY;
             const token = await getToken(messaging, { vapidKey });
             
             if (token) {
@@ -87,80 +88,26 @@ const FirebaseNotifications = ({ currentUser, app }) => {
       
       if (!notification) return;
       
-      // Create and show a custom notification UI element
-      // This is needed because browser notifications don't automatically show when app is open
-      const notificationElement = document.createElement('div');
-      notificationElement.className = 'app-notification';
-      notificationElement.innerHTML = `
-        <div class="notification-content">
-          <h4>${notification.title || 'New Notification'}</h4>
-          <p>${notification.body || ''}</p>
-        </div>
-        <button class="notification-close">×</button>
-      `;
-      
-      // Style the notification
-      Object.assign(notificationElement.style, {
-        position: 'fixed',
-        top: '20px',
-        right: '20px',
-        backgroundColor: 'var(--card-bg)',
-        color: 'var(--text-color)',
-        padding: '15px',
-        borderRadius: '10px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-        zIndex: '9999',
-        minWidth: '300px',
-        maxWidth: '400px',
-        animation: 'slideIn 0.3s ease-out forwards'
-      });
-      
-      // Add animation keyframes
-      const style = document.createElement('style');
-      style.innerHTML = `
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
+      // Use toast notification since it works on mobile
+      toast.info(
+        <div>
+          <div style={{ fontWeight: 'bold' }}>{notification.title || 'New Notification'}</div>
+          <div>{notification.body || ''}</div>
+        </div>, 
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          // You can customize toast appearance to match your app's style
+          style: {
+            background: 'var(--card-bg)',
+            color: 'var(--text-color)'
+          }
         }
-        @keyframes slideOut {
-          from { transform: translateX(0); opacity: 1; }
-          to { transform: translateX(100%); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(style);
-      
-      // Add to DOM
-      document.body.appendChild(notificationElement);
-      
-      // Close button handler
-      const closeButton = notificationElement.querySelector('.notification-close');
-      closeButton.style.position = 'absolute';
-      closeButton.style.top = '10px';
-      closeButton.style.right = '10px';
-      closeButton.style.background = 'none';
-      closeButton.style.border = 'none';
-      closeButton.style.fontSize = '20px';
-      closeButton.style.cursor = 'pointer';
-      closeButton.style.color = 'var(--text-color)';
-      
-      closeButton.addEventListener('click', () => {
-        notificationElement.style.animation = 'slideOut 0.3s ease-in forwards';
-        setTimeout(() => {
-          document.body.removeChild(notificationElement);
-        }, 300);
-      });
-      
-      // Auto-dismiss after 5 seconds
-      setTimeout(() => {
-        if (document.body.contains(notificationElement)) {
-          notificationElement.style.animation = 'slideOut 0.3s ease-in forwards';
-          setTimeout(() => {
-            if (document.body.contains(notificationElement)) {
-              document.body.removeChild(notificationElement);
-            }
-          }, 300);
-        }
-      }, 5000);
+      );
     };
     
     initializeFirebaseMessaging();

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import EntryCard from "./EntryCard"; // Import our reusable component
+import { toast } from 'react-toastify';
 
 const API_URL = 'https://mljapp.onrender.com/japp';
 const DB_NAME = 'MemoryLaneDB';
@@ -7,19 +9,43 @@ const DB_VERSION = 1;
 const ENTRIES_STORE = 'journalEntries';
 const PENDING_STORE = 'pendingOperations';
 
-const JournalFeed = ({ currentUser }) => {
+const JournalFeed = ({ currentUser , profilePic }) => {
   const [entries, setEntries] = useState([]);
   const [newEntry, setNewEntry] = useState({
     textEntry: '',
     imageFile: null,
-    publicStatus: false // Added for public/private toggle
+    publicStatus: false
   });
   const [loading, setLoading] = useState(false);
   const [entryLoading, setEntryLoading] = useState(true);
   const [message, setMessage] = useState('');
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [expandedEntryId, setExpandedEntryId] = useState(null);
+  const [menuVisibleId, setMenuVisibleId] = useState(null);
+
+  const getUserProfilePic = (entry) => {
+    return entry?.userPfp || "https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg";
+  };
+  // Toggle card expansion
+  const toggleExpand = (entryId) => {
+    if (expandedEntryId === entryId) {
+      setExpandedEntryId(null); // Collapse
+    } else {
+      setExpandedEntryId(entryId); // Expand
+    }
+  };
+
+  // Format date for better display
+  const formatDate = (dateString) => {
+    const options = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   // Initialize IndexedDB
   const initDB = () => {
@@ -126,6 +152,21 @@ const JournalFeed = ({ currentUser }) => {
     return false;
   };
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (menuVisibleId !== null) {
+        setMenuVisibleId(null);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [menuVisibleId]);
+
   // Monitor online/offline status
   useEffect(() => {
     const handleOnline = () => {
@@ -160,10 +201,11 @@ const JournalFeed = ({ currentUser }) => {
       if (navigator.onLine) {
         // Online: fetch from server
         const response = await axios.get(`${API_URL}/entries/${currentUser}`);
-        if (response.data && response.data.length > 0) {
-          const sortedEntries = response.data.sort((a, b) => 
-            new Date(b.createdAt) - new Date(a.createdAt)
-          );
+        if (response.status === 200 && response.data && response.data.length > 0) {
+          const sortedEntries = response.data.map(entry => ({
+            ...entry,
+            userPfp: profilePic // Add the profile pic to each entry
+          })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           
           // Save to IndexedDB for offline use
           await saveEntriesToLocal(sortedEntries);
@@ -220,7 +262,7 @@ const JournalFeed = ({ currentUser }) => {
     });
   };
 
-  // Updated function to use the correct API endpoint
+  // Handle toggling entry public status
   const handleToggleEntryPublicStatus = async (entryId, currentStatus) => {
     try {
       // Find the current entry
@@ -237,7 +279,7 @@ const JournalFeed = ({ currentUser }) => {
         publicStatus: !currentStatus
       };
       
-      // Call the correct API endpoint
+      // Call the API endpoint
       await axios.put(`${API_URL}/entry/status`, journalEntryDTO);
       
       // Update local state
@@ -249,32 +291,22 @@ const JournalFeed = ({ currentUser }) => {
         )
       );
       
-      // Update selected entry if it's the one being modified
-      if (selectedEntry && selectedEntry.id === entryId) {
-        setSelectedEntry({ ...selectedEntry, publicStatus: !currentStatus });
-      }
-      
-      setMessage(`Entry is now ${!currentStatus ? 'public' : 'private'}`);
+      toast.success(`Entry is now ${!currentStatus ? 'public' : 'private'}`, { autoClose: 2000 });
     } catch (error) {
       console.error('Error toggling public status:', error);
-      setMessage('Failed to update entry status. Please try again.');
+      toast.error('Failed to update entry status. Please try again.', { autoClose: 3000 });
     }
   };
 
   const handleDeleteEntry = async (entryId) => {
-    if (!window.confirm("Are you sure you want to delete this entry? This action cannot be undone.")) {
-      return;
-    }
-    
     setLoading(true);
     
     try {
       if (navigator.onLine) {
         // Online: delete from server
         await axios.delete(`${API_URL}/entries/${entryId}`);
-        closeModal();
         fetchEntries();
-        setMessage('Entry deleted successfully!');
+        toast.success('Entry deleted successfully!', { autoClose: 2000 });
       } else {
         // Offline: queue for deletion when back online
         
@@ -300,15 +332,14 @@ const JournalFeed = ({ currentUser }) => {
         // Request sync for when we're back online
         await requestSync();
         
-        closeModal();
-        setMessage('Entry marked for deletion. Will be removed from server when online.');
+        toast.info('Entry marked for deletion. Will be removed from server when online.', { autoClose: 3000 });
         
         // Update UI immediately
         setEntries(entries.filter(entry => entry.id !== entryId));
       }
     } catch (error) {
       console.error('Error deleting entry:', error);
-      setMessage('Failed to delete entry. Please try again.');
+      toast.error('Failed to delete entry. Please try again.', { autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -323,7 +354,7 @@ const JournalFeed = ({ currentUser }) => {
       textEntry: newEntry.textEntry,
       username: currentUser,
       createdAt: new Date().toISOString(),
-      publicStatus: newEntry.publicStatus // Include public status
+      publicStatus: newEntry.publicStatus
     };
     
     const formData = new FormData();
@@ -343,7 +374,7 @@ const JournalFeed = ({ currentUser }) => {
         });
 
         if (response.status === 200) {
-          setMessage('Entry created successfully!');
+          toast.success('Entry created successfully!', { autoClose: 2000 });
           setNewEntry({ textEntry: '', imageFile: null, publicStatus: false });
           // Refresh entries
           fetchEntries();
@@ -384,7 +415,7 @@ const JournalFeed = ({ currentUser }) => {
         // Request sync when back online
         await requestSync();
         
-        setMessage('Entry saved locally. Will sync when you reconnect.');
+        toast.info('Entry saved locally. Will sync when you reconnect.', { autoClose: 3000 });
         setNewEntry({ textEntry: '', imageFile: null, publicStatus: false });
         
         // Update UI immediately
@@ -392,19 +423,10 @@ const JournalFeed = ({ currentUser }) => {
       }
     } catch (error) {
       console.error('Error creating entry:', error);
-      setMessage('Failed to create entry. Please try again.');
+      toast.error('Failed to create entry. Please try again.', { autoClose: 3000 });
     } finally {
       setLoading(false);
     }
-  };
-
-  const openEntryModal = (entry) => {
-    setSelectedEntry(entry);
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
   };
 
   return (
@@ -519,123 +541,43 @@ const JournalFeed = ({ currentUser }) => {
         <h2>Journal Feed <i className="flower-icon">🌹</i></h2>
         
         {entryLoading ? (
-          <p className="text-center">Loading entries...</p>
+          <div className="loading-container" style={{ textAlign: 'center', padding: '20px' }}>
+            <div className="loading-spinner" style={{
+              width: '40px',
+              height: '40px',
+              margin: '0 auto 15px auto',
+              border: '4px solid rgba(var(--primary-color-rgb), 0.3)',
+              borderRadius: '50%',
+              borderTop: '4px solid var(--primary-color)',
+              animation: 'spin 1s linear infinite'
+            }}></div>
+            Loading entries...
+          </div>
         ) : entries.length === 0 ? (
-          <p className="text-center">No journal entries yet. Start by creating one!</p>
+          <div className="empty-feed" style={{ textAlign: 'center', padding: '20px' }}>
+            <p>No journal entries yet. Start by creating one!</p>
+          </div>
         ) : (
-          <div className="journal-entries">
-            {entries.map((entry, index) => (
-              <div key={entry.id || index} className="journal-entry" onClick={() => openEntryModal(entry)}>
-                {/* Show pending sync indicator for offline entries */}
-                {entry.isPending && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    left: '10px',
-                    backgroundColor: 'rgba(255, 152, 0, 0.2)',
-                    padding: '3px 8px',
-                    borderRadius: '10px',
-                    fontSize: '0.7rem',
-                    color: '#E65100'
-                  }}>
-                    Pending
-                  </div>
-                )}
-                
-                {/* Use localImageUrl for offline-created entries */}
-                {entry.localImageUrl &&(
-                  <img 
-                    src={entry.localImageUrl} 
-                    alt="Journal Entry" 
-                    className="journal-image"
-                  />
-                )}
-                
-                {entry.imageUrl && entry.imageUrl.trim() !== "" && !entry.localImageUrl &&(
-                  <img 
-                    src={entry.imageUrl} 
-                    alt="Journal Entry" 
-                    className="journal-image"
-                  />
-                )}
-                
-                <p className="journal-text">{entry.textEntry}</p>
-                <p className="text-muted">
-                  Created on: {new Date(entry.createdAt).toLocaleDateString()}
-                </p>
-              </div>
+          <div className="card-feed">
+            {entries.map((entry) => (
+              <EntryCard
+                key={entry.id}
+                entry={entry}
+                currentUser={currentUser}
+                isPublicFeed={false}
+                expandedEntryId={expandedEntryId}
+                menuVisibleId={menuVisibleId}
+                toggleExpand={toggleExpand}
+                setMenuVisibleId={setMenuVisibleId}
+                handleDeleteEntry={handleDeleteEntry} 
+                handleToggleStatus={handleToggleEntryPublicStatus}
+                getUserProfilePic={getUserProfilePic}
+                formatDate={formatDate}
+              />
             ))}
           </div>
         )}
       </div>
-      
-      {/* Modal for Viewing Entries */}
-      {modalVisible && selectedEntry && (
-        <div className="modal" style={{ display: 'block' }}>
-          <div className="modal-content">
-            <span className="close" onClick={closeModal}>&times;</span>
-            
-            {selectedEntry.localImageUrl && (
-              <img 
-                src={selectedEntry.localImageUrl} 
-                alt="Journal Entry" 
-                style={{ width: '100%', borderRadius: '10px', marginBottom: '15px' }}
-              />
-            )}
-            
-            {selectedEntry.imageUrl && selectedEntry.imageUrl.trim() !== "" && !selectedEntry.localImageUrl && (
-              <img 
-                src={selectedEntry.imageUrl} 
-                alt="Journal Entry" 
-                style={{ width: '100%', borderRadius: '10px', marginBottom: '15px' }}
-              />
-            )}
-            
-            <p style={{ fontSize: '18px', marginBottom: '15px' }}>{selectedEntry.textEntry}</p>
-            <p className="text-muted">
-              Created on: {new Date(selectedEntry.createdAt).toLocaleDateString()}
-            </p>
-            
-            {/* Public/Private Status Toggle */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '15px'
-            }}>
-              <button
-                onClick={() => handleToggleEntryPublicStatus(selectedEntry.id, selectedEntry.publicStatus)}
-                className={selectedEntry.publicStatus ? 'btn-danger' : 'btn-primary'}
-                style={{ marginRight: '10px' }}
-                disabled={loading || selectedEntry.isPending}
-              >
-                {selectedEntry.publicStatus ? 'Make Private' : 'Make Public'}
-              </button>
-              
-              <button
-                onClick={() => handleDeleteEntry(selectedEntry.id)}
-                className='btn-danger'
-                disabled={loading}
-              >
-                {loading ? 'Deleting...' : 'Delete Entry'}
-              </button>
-            </div>
-            
-            {/* Show pending status in modal if applicable */}
-            {selectedEntry.isPending && (
-              <p style={{ 
-                color: '#E65100', 
-                backgroundColor: 'rgba(255, 152, 0, 0.2)',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                marginBottom: '15px'
-              }}>
-                This entry is pending synchronization and will be uploaded when you reconnect.
-              </p>
-            )}
-          </div>
-        </div>
-      )}
       
       <div style={{ height: '70px' }}></div> {/* Space for bottom navigation */}
     </div>

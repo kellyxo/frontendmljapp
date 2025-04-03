@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { HeartFill } from 'react-bootstrap-icons';
+import { HeartFill, Globe, LockFill, ThreeDots } from 'react-bootstrap-icons';
+import ThemeSwitcher from './ThemeSwitcher';
 
 const API_URL = 'https://mljapp.onrender.com/japp';
 
@@ -10,13 +11,12 @@ const PublicFeed = ({ currentUser }) => {
   const [friendsEntries, setFriendsEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
   const [friends, setFriends] = useState([]);
   const [userProfiles, setUserProfiles] = useState({});
+  const [expandedEntryId, setExpandedEntryId] = useState(null);
+  const[menuVisibleId, setMenuVisibleId] = useState(null);
   
-  // Updated helper function to get a user's profile picture
-  // Now primarily using the userPfp field from the entry if available
+  // Helper function to get a user's profile picture
   const getUserProfilePic = (entry) => {
     // First try to use the userPfp field directly from the entry
     if (entry && entry.userPfp) {
@@ -30,6 +30,14 @@ const PublicFeed = ({ currentUser }) => {
     
     // Default image as last resort
     return "https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg";
+  };
+  
+  const toggleExpand = (entryId) => {
+    if (expandedEntryId === entryId) {
+      setExpandedEntryId(null); // Collapse
+    } else {
+      setExpandedEntryId(entryId); // Expand
+    }
   };
 
   useEffect(() => {
@@ -69,7 +77,22 @@ const PublicFeed = ({ currentUser }) => {
       fetchPublicEntries();
     }
   };
-
+  useEffect(() => {
+    // Function to close menu when clicking outside
+    const handleClickOutside = () => {
+      if (menuVisibleId !== null) {
+        setMenuVisibleId(null);
+      }
+    };
+    
+    // Add event listener when component mounts
+    document.addEventListener('click', handleClickOutside);
+    
+    // Clean up event listener when component unmounts
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [menuVisibleId]);
   // Handle like 
   const handleLike = async (entryId) => {
     try {
@@ -83,8 +106,7 @@ const PublicFeed = ({ currentUser }) => {
         imageUrl: entry.imageUrl,
         createdAt: entry.createdAt,
         username: currentUser,
-        publicStatus: entry.publicStatus,
-        // userPfp: entry.userPfp // Include the userPfp field
+        publicStatus: entry.publicStatus
       };
   
       const response = await axios.put(`${API_URL}/like/entry/${currentUser}`, journalEntryDTO);
@@ -97,14 +119,6 @@ const PublicFeed = ({ currentUser }) => {
         prevEntries.map(e => e.id === entryId ? { ...e, likeCount: response.data.likeCount } : e)
       );
   
-      // If a modal is open, update the selected entry
-      if (selectedEntry && selectedEntry.id === entryId) {
-        setSelectedEntry({
-          ...selectedEntry,
-          likeCount: response.data.likeCount
-        });
-      }
-      
       toast.success('Liked entry!', { autoClose: 2000 });
     } catch (error) {
       console.error('Error liking entry:', error);
@@ -128,7 +142,6 @@ const PublicFeed = ({ currentUser }) => {
         createdAt: entry.createdAt,
         username: currentUser,
         publicStatus: false, // Set to private
-        // userPfp: entry.userPfp // Include the userPfp field
       };
       
       await axios.put(`${API_URL}/entry/status`, journalEntryDTO);
@@ -142,7 +155,6 @@ const PublicFeed = ({ currentUser }) => {
         prevEntries.filter(e => e.id !== entryId)
       );
       
-      closeModal();
       toast.success('Entry is now private', { autoClose: 2000 });
     } catch (error) {
       console.error('Error making entry private:', error);
@@ -175,10 +187,23 @@ const PublicFeed = ({ currentUser }) => {
 
   // Fetch entries from friends
   const fetchFriendsEntries = async (friendsList) => {
-    const friendsEntries = publicEntries.filter(entry =>
-      friendsList.includes(entry.username) || entry.username === currentUser
+    if (!friendsList || !Array.isArray(friendsList)) {
+      setFriendsEntries([]);
+      return;
+    }
+  
+    // Extract usernames from friend DTOs
+    const friendUsernames = friendsList.map(friendDTO => {
+      if (friendDTO.username1 === currentUser) return friendDTO.username2 || friendDTO.Username2;
+      return friendDTO.username1 || friendDTO.Username1;
+    }).filter(username => username); // Filter out any undefined or null
+  
+    // Filter entries that belong to friends
+    const entries = publicEntries.filter(entry => 
+      friendUsernames.includes(entry.username) || entry.username === currentUser
     );
-    setFriendsEntries(friendsEntries);
+  
+    setFriendsEntries(entries);
   };
 
   // Combine public and friends entries, removing duplicates
@@ -196,15 +221,6 @@ const PublicFeed = ({ currentUser }) => {
     );
   };
 
-  const openEntryModal = (entry) => {
-    setSelectedEntry(entry);
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-  };
-
   // Format date for better display
   const formatDate = (dateString) => {
     const options = { 
@@ -216,7 +232,229 @@ const PublicFeed = ({ currentUser }) => {
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  const EntryCard = ({ entry }) => {
+    const isExpanded = expandedEntryId === entry.id;
+    const isOwner = entry.username === currentUser;
+    
+    return (
+      <div 
+        className="entry-card" 
+        style={{
+          backgroundColor: 'var(--card-bg)',
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px var(--shadow-color)',
+          marginBottom: '20px',
+          overflow: 'hidden',
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+          transform: isExpanded ? 'translateY(-5px)' : 'translateY(0)',
+          boxShadow: isExpanded ? '0 8px 16px var(--shadow-color)' : '0 2px 8px var(--shadow-color)'
+        }}
+      >
+        {/* Card Header */}
+        <div style={{
+          padding: '12px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          borderBottom: '1px solid rgba(var(--primary-color-rgb), 0.1)'
+        }}>
+          <img 
+            src={getUserProfilePic(entry)} 
+            alt="Profile" 
+            style={{ 
+              width: '40px', 
+              height: '40px', 
+              borderRadius: '50%', 
+              marginRight: '12px',
+              objectFit: 'contain'
+            }}
+          />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 'bold' }}>
+              {entry.username}
+              {entry.username === currentUser && (
+                <span style={{ 
+                  fontSize: '0.8rem', 
+                  backgroundColor: 'var(--primary-color)', 
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '10px',
+                  marginLeft: '8px'
+                }}>
+                  You
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+              {formatDate(entry.createdAt)}
+            </div>
+          </div>
+          <div style={{ position: 'relative' }}>
+            {entry.publicStatus ? 
+              <Globe style={{ marginRight: '8px', opacity: 0.7 }} /> : 
+              <LockFill style={{ marginRight: '8px', opacity: 0.7 }} />
+            }
+            <ThreeDots  
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuVisibleId(menuVisibleId === entry.id ? null : entry.id);
+              }}
+              style={{ cursor: 'pointer', opacity: 0.7, padding: "5px" }} 
+            />
+            
+            {/* Three dots menu */}
+            {menuVisibleId === entry.id && (
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: '25px',
+                  right: '0',
+                  border: '1px solid #eee',
+                  background: "var(--card-bg)",
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  zIndex: 10,
+                  width: '150px'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {entry.username === currentUser && (
+                  <div 
+                    onClick={() => {
+                      makeEntryPrivate(entry.id);
+                      setMenuVisibleId(null);
+                    }}
+                    style={{
+                      padding: '10px 15px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #eee'
+                    }}
+                  >
+                    Make Private
+                  </div>
+                )}
+                
+                <div 
+                  onClick={() => setMenuVisibleId(null)}
+                  style={{
+                    padding: '10px 15px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
   
+        {/* Card Content */}
+        <div 
+          style={{ cursor: 'pointer' }}
+          onClick={() => toggleExpand(entry.id)}
+        >
+          {/* Image if available */}
+          {entry.imageUrl && entry.imageUrl.trim() !== "" && (
+            <div style={{ position: 'relative' }}>
+              <img 
+                src={entry.imageUrl} 
+                alt="Journal Entry" 
+                style={{ 
+                  width: '100%', 
+                  maxHeight: isExpanded ? '900x' : '300px',
+                  objectFit: 'cover',
+                  transition: 'max-height 0.3s ease'
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Text Content */}
+          <div style={{ padding: '16px' }}>
+            <p style={{ margin: 0, lineHeight: 1.5 }}>
+              {isExpanded ? 
+                entry.textEntry : 
+                (entry.textEntry.length > 150 ? 
+                  `${entry.textEntry.substring(0, 150)}...` : 
+                  entry.textEntry)
+              }
+            </p>
+            
+            {!isExpanded && entry.textEntry.length > 150 && (
+              <button 
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--primary-color)',
+                  padding: '8px 0',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleExpand(entry.id);
+                }}
+              >
+                Read more
+              </button>
+            )}
+          </div>
+        </div>
+        
+        {/* Card Footer */}
+        <div style={{ 
+          padding: '12px 16px',
+          borderTop: '1px solid rgba(var(--primary-color-rgb), 0.1)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button 
+              onClick={() => handleLike(entry.id)}
+              style={{
+                background: 'none',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                color: 'var(--primary-color)',
+                fontWeight: 'bold',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                marginRight: '8px'
+              }}
+            >
+              <HeartFill style={{ marginRight: '6px', color: '#FF6B6B' }} />
+              {entry.likeCount || 0}
+            </button>
+          </div>
+        </div>
+        
+        {/* Expanded area for when a card is expanded */}
+        {isExpanded && (
+          <div style={{ 
+            padding: '0 16px 16px',
+            animation: 'fadeIn 0.3s ease'
+          }}>
+            <div style={{ 
+              fontSize: '0.9rem', 
+              padding: '12px',
+              backgroundColor: 'rgba(var(--primary-color-rgb), 0.05)',
+              borderRadius: '8px',
+              textAlign: 'center'
+            }}>
+              <span onClick={() => toggleExpand(entry.id)} style={{ cursor: 'pointer' }}>
+                Click anywhere to collapse
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+
   return (
     <div className="container fade-in">
       <h1 className="mb-4">Public Feed <i className="flower-icon">📝</i></h1>
@@ -251,135 +489,14 @@ const PublicFeed = ({ currentUser }) => {
           <p>No public entries available. Add friends or make your entries public to see content here!</p>
         </div>
       ) : (
-        <div className="public-entries">
+        <div className="card-feed">
           {allEntries().map((entry) => (
-            <div 
-              key={entry.id} 
-              className="journal-entry" 
-              onClick={() => openEntryModal(entry)}
-              style={{
-                position: 'relative',
-                cursor: 'pointer'
-              }}
-            >
-              {/* Author badge */}
-              <div className="entry-author" style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                backgroundColor: entry.username === currentUser 
-                  ? 'var(--primary-color)' 
-                  : 'rgba(0, 0, 0, 0.5)',
-                color: 'white',
-                padding: '3px 8px',
-                borderRadius: '15px',
-                fontSize: '0.8rem'
-              }}>
-                {entry.username === currentUser ? 'You' : entry.username}
-              </div>
-              
-              {entry.imageUrl && entry.imageUrl.trim() !== "" && (
-                <img 
-                  src={entry.imageUrl} 
-                  alt="Journal Entry" 
-                  style={{ 
-                    width: '100%', 
-                    maxHeight: '300px',
-                    objectFit: 'cover',
-                    borderRadius: '10px' 
-                  }}
-                />
-              )}
-              
-              <p className="entry-text" style={{ 
-                marginTop: entry.imageUrl ? '15px' : '0',
-                fontSize: '1rem'
-              }}>
-                {entry.textEntry.length > 150 
-                  ? `${entry.textEntry.substring(0, 150)}...` 
-                  : entry.textEntry}
-              </p>
-              
-              <div className="entry-footer" style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                color: 'var(--text-color)',
-                opacity: 0.7,
-                fontSize: '0.9rem',
-                marginTop: '10px'
-              }}>
-                <span>{formatDate(entry.createdAt)}</span>
-                <span style={{ fontStyle: 'italic' }}>
-                  {entry.likeCount || 0} {entry.likeCount === 1 ? 'like' : 'likes'}
-                </span>
-              </div>
-            </div>
+            <EntryCard key={entry.id} entry={entry} />
           ))}
         </div>
       )}
       
-      {/* Modal for Viewing Entries */}
-      {modalVisible && selectedEntry && (
-        <div className="modal" style={{ display: 'block' }}>
-          <div className="modal-content">
-            <span className="close" onClick={closeModal}>&times;</span>
-            
-            <div className="entry-author-header" style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '15px'
-            }}>
-              <img 
-                src={getUserProfilePic(selectedEntry)} 
-                alt="Profile" 
-                style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '10px' }}
-              />
-              <h3 style={{ margin: 0 }}>
-                {selectedEntry.username}
-              </h3>
-              <span style={{ marginLeft: 'auto', fontSize: '0.9rem', color: 'var(--text-color)', opacity: 0.7 }}>
-                {formatDate(selectedEntry.createdAt)}
-              </span>
-            </div>
-            
-            {selectedEntry.imageUrl && selectedEntry.imageUrl.trim() !== "" && (
-              <img 
-                src={selectedEntry.imageUrl} 
-                alt="Journal Entry" 
-                style={{ width: '100%', borderRadius: '10px', marginBottom: '15px' }}
-              />
-            )}
-            
-            <p style={{ fontSize: '1rem', lineHeight: '1.6' }}>{selectedEntry.textEntry}</p>
-            
-            <div style={{ 
-              marginTop: '20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <button 
-                className="btn-primary"
-                onClick={() => handleLike(selectedEntry.id)}
-                style={{ padding: '5px 10px' }}
-              >
-                <HeartFill color="red" size={16} /> 
-                {selectedEntry.likeCount || 0}
-              </button>
-              
-              {selectedEntry.username === currentUser && (
-                <button
-                  className="btn-danger"
-                  onClick={() => makeEntryPrivate(selectedEntry.id)}
-                  style={{ padding: '5px 10px' }}
-                >
-                  Make Private
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <div style={{ height: '70px' }}></div> {/* Space for bottom navigation */}
     </div>
   );
 };

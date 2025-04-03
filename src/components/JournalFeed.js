@@ -9,7 +9,7 @@ const DB_VERSION = 1;
 const ENTRIES_STORE = 'journalEntries';
 const PENDING_STORE = 'pendingOperations';
 
-const JournalFeed = ({ currentUser , profilePic }) => {
+const JournalFeed = ({ currentUser  }) => {
   const [entries, setEntries] = useState([]);
   const [newEntry, setNewEntry] = useState({
     textEntry: '',
@@ -22,9 +22,13 @@ const JournalFeed = ({ currentUser , profilePic }) => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [menuVisibleId, setMenuVisibleId] = useState(null);
-
+  const [userProfilePic, setUserProfilePic] = useState(
+    "https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg"
+);
+  
   const getUserProfilePic = (entry) => {
-    return entry?.userPfp || "https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg";
+    // First try to use the userPfp field directly from the entry
+    return entry.userPfp || "https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg"
   };
   // Toggle card expansion
   const toggleExpand = (entryId) => {
@@ -151,7 +155,22 @@ const JournalFeed = ({ currentUser , profilePic }) => {
     }
     return false;
   };
-
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/getUser/${currentUser}`);
+        if (response.data?.pfpUrl) {
+          setUserProfilePic(response.data.pfpUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+    
+    if (currentUser) {
+      fetchUserProfile();
+    }
+  }, [currentUser]);
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
@@ -204,7 +223,7 @@ const JournalFeed = ({ currentUser , profilePic }) => {
         if (response.status === 200 && response.data && response.data.length > 0) {
           const sortedEntries = response.data.map(entry => ({
             ...entry,
-            userPfp: profilePic // Add the profile pic to each entry
+            userPfp: userProfilePic // Add the profile pic to each entry
           })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           
           // Save to IndexedDB for offline use

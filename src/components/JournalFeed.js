@@ -28,7 +28,11 @@ const JournalFeed = ({ currentUser  }) => {
   
   const getUserProfilePic = (entry) => {
     // First try to use the userPfp field directly from the entry
+    if (userProfilePic && userProfilePic !== "https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg") {
+      return userProfilePic;
+    }
     return entry.userPfp;
+
   };
   // Toggle card expansion
   const toggleExpand = (entryId) => {

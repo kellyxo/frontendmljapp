@@ -3,7 +3,9 @@
   "version": "1.1.0",
   "private": true,
   "dependencies": {
-    "axios": "^1.4.0",
+    "@giphy/js-fetch-api": "^5.6.0",
+    "@giphy/react-components": "^10.0.1",
+    "axios": "^1.8.4",
     "bootstrap": "^5.3.3",
     "firebase": "^11.4.0",
     "pwa-asset-generator": "^8.0.0",
@@ -13,6 +15,8 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.2",
     "react-scripts": "^5.0.1",
+    "react-spring-bottom-sheet": "^3.4.1",
+    "react-timeago": "^8.0.0",
     "react-toastify": "^11.0.5",
     "web-vitals": "^2.1.4",
     "workbox-precaching": "^7.3.0"
@@ -42,10 +46,10 @@
     ]
   },
   "devDependencies": {
-    "workbox-webpack-plugin": "^7.3.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0"
+    "@testing-library/user-event": "^13.5.0",
+    "workbox-webpack-plugin": "^7.3.0"
   },
   "description": "Journal app to save your photos and thoughts",
   "main": "index.js",

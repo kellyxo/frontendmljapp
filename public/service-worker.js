@@ -84,6 +84,11 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(fetch(event.request));
     return;
   }
+  if (url.hostname === 'api.giphy.com') {
+    // Pass through to network without caching or intercepting
+    event.respondWith(fetch(event.request));
+    return;
+  }
   
   // HTML and App Shell - network first for faster updates
   if (url.pathname === '/' || 

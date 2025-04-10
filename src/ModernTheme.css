@@ -85,3 +85,44 @@ html.modern ::-webkit-scrollbar-thumb {
 html.modern ::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-color);
 }
+whats-new-trigger {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px var(--shadow-color);
+  font-family: 'Pacifico', cursive;
+}
+
+.whats-new-trigger:hover {
+  background-color: var(--secondary-color);
+}
+/* ModernTheme.css / BeigeTheme.css etc */
+:root {
+  --headway-bg: var(--card-bg);
+  --headway-text: var(--text-color);
+  --headway-accent: var(--primary-color);
+}
+
+.HW_frame {
+  background: var(--headway-bg) !important;
+  color: var(--headway-text) !important;
+}
+
+.HW_popup_header {
+  background: var(--headway-accent) !important;
+}
+
+.HW_badge {
+  background: var(--headway-accent) !important;
+}

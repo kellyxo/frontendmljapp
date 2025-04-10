@@ -23,6 +23,7 @@ import "./App.css";
 import "./ModernTheme.css";
 import "./BeigeTheme.css"; // Import the new beige theme
 import "./minimalist.css"
+import HeadwayWidget from "./components/HeadwayWidget";
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -53,7 +54,7 @@ function App() {
   const [profilePic, setProfilePic] = useState(
     "https://i.pinimg.com/736x/8a/01/90/8a01903812976cb052c8db89eb5fbc78.jpg"
   );
-
+  
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem("currentUser", currentUser);
@@ -63,6 +64,7 @@ function App() {
       localStorage.removeItem("currentUser");
     }
   }, [currentUser]);
+
 useEffect(() => {
   // Service worker update detection and handling
   if ('serviceWorker' in navigator) {
@@ -167,8 +169,12 @@ useEffect(() => {
           />
         </div>
 
+
+          
+
         {currentUser && (
           <>
+    
             {/* Profile Icon in top right */}
             <div className="profile-icon-container">
               <img
@@ -178,12 +184,13 @@ useEffect(() => {
                 onClick={() => (window.location.href = "/profile")}
               />
             </div>
-
+            <HeadwayWidget />
             {/* Initialize Firebase notifications with fixed component */}
             <FirebaseNotifications currentUser={currentUser} app={app} />
 
             {/* Bottom Navigation */}
             <BottomNavigation currentUser={currentUser} />
+            
           </>
         )}
 

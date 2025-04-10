@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { HeartFill, Globe, LockFill, ThreeDots } from 'react-bootstrap-icons';
+import { HeartFill, Globe, LockFill, ThreeDots ,ChatLeft} from 'react-bootstrap-icons';
 import ThemeSwitcher from './ThemeSwitcher';
+import Comment from './comments/Comment';
+
 
 const API_URL = 'https://mljapp.onrender.com/japp';
 
@@ -39,6 +41,7 @@ const PublicFeed = ({ currentUser }) => {
       setExpandedEntryId(entryId); // Expand
     }
   };
+  
 
   useEffect(() => {
     fetchFriends();
@@ -236,6 +239,8 @@ const PublicFeed = ({ currentUser }) => {
   const EntryCard = ({ entry }) => {
     const isExpanded = expandedEntryId === entry.id;
     const isOwner = entry.username === currentUser;
+    const[showComments, setShowComments] = useState(false)
+
     
     return (
       <div 
@@ -428,9 +433,31 @@ const PublicFeed = ({ currentUser }) => {
               <HeartFill style={{ marginRight: '6px', color: '#FF6B6B' }} />
               {entry.likeCount || 0}
             </button>
+            <button  onClick={() => setShowComments(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                color: 'var(--primary-color)',
+                fontWeight: 'bold',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                marginRight: '8px'
+              }}
+            > 
+            <ChatLeft style={{ marginRight: '6px', color: '#FF6B6B' }} />
+            </button>
           </div>
         </div>
-        
+      
+        {showComments && (
+          <Comment 
+            journalEntryId={entry.id} 
+            currentUsername={currentUser} 
+          />
+        )}
         {/* Expanded area for when a card is expanded */}
         {isExpanded && (
           <div style={{ 
@@ -495,6 +522,7 @@ const PublicFeed = ({ currentUser }) => {
           ))}
         </div>
       )}
+      
       
       <div style={{ height: '70px' }}></div> {/* Space for bottom navigation */}
     </div>

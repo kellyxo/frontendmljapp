@@ -240,71 +240,92 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
             </div>
           </form>
         </div>
-        
-        {/* GIF Selector */}
+       
+        {/* GIF Selector - IMPROVED FOR MOBILE */}
         {showGifSelector && (
           <div className="giphy-selector" style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.1)', // Darker background
+            backgroundColor: 'rgba(0, 0, 0, 0.1)',
             borderRadius: '8px',
             padding: '15px',
             marginBottom: '20px'
           }}>
-            <form onSubmit={(e) => searchGifs(e, true)} className="search-container">
+            <form onSubmit={(e) => searchGifs(e, true)} className="search-container" style={{
+              display: 'flex',
+              gap: '8px',
+              marginBottom: '15px'
+            }}>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search GIFs..."
                 className="form-control"
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid #ccc'
+                }}
               />
               <button
                 type="submit"
                 className="btn-primary"
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  backgroundColor: 'var(--primary-color, #007bff)',
+                  color: 'white',
+                  whiteSpace: 'nowrap'
+                }}
               >
                 Search
               </button>
             </form>
             
+            {/* RESPONSIVE GRID - Key improvement for mobile */}
             <div 
               ref={gifContainerRef}
               className="grid-container" 
               style={{ 
-                height: '300px', // Fixed height to ensure scrolling happens inside
-                overflowY: 'auto', // Allow vertical scrolling
+                height: '300px',
+                overflowY: 'auto',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', // Larger grid cells
-                gap: '10px',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', // Smaller minimums for mobile
+                gap: '8px',
                 padding: '10px',
-                backgroundColor: 'rgba(0, 0, 0, 0.05)'
+                backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                borderRadius: '8px'
               }}
             >
               {gifs.map((gif, index) => (
                 <div 
                   key={`${gif.id}-${index}`}
                   onClick={() => handleGifSelected(gif.images.fixed_height.url)}
-                  className="journal-entry"
+                  className="gif-item"
                   style={{
                     cursor: 'pointer',
-                    padding: '8px',
-                    backgroundColor: 'var(--card-bg)',
+                    padding: '4px',
+                    backgroundColor: 'var(--card-bg, #ffffff)',
                     borderRadius: '8px',
                     transition: 'transform 0.2s',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    height: '140px' // Fixed height for consistent grid
+                    height: '100px', // Smaller fixed height for mobile
+                    overflow: 'hidden' // Prevent overflow
                   }}
                   onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                   onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
                   <img
-                    src={gif.images.fixed_height.url} // Using larger image
+                    src={gif.images.fixed_height.url}
                     alt={gif.title}
                     loading="lazy"
                     style={{ 
-                      maxHeight: '130px', 
+                      maxHeight: '95px', 
                       maxWidth: '100%',
-                      objectFit: 'contain' // Maintain aspect ratio
+                      objectFit: 'contain'
                     }}
                   />
                 </div>
@@ -321,7 +342,7 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
               )}
             </div>
             
-            <div className="text-muted text-center" style={{marginTop: '10px'}}>
+            <div className="text-muted text-center" style={{marginTop: '10px', fontSize: '0.8rem'}}>
               Powered by GIPHY
             </div>
           </div>

@@ -66,7 +66,7 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
       const response = await axios.get(`https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}`, {
         params: {
           limit: 20,
-          rating: 'g',
+          rating: 'r',
           offset: offset
         }
       });
@@ -102,7 +102,7 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
         params: {
           q: searchTerm,
           limit: 20,
-          rating: 'g',
+          rating: 'r',
           offset: offset
         }
       });

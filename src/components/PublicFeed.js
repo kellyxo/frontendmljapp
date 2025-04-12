@@ -456,6 +456,8 @@ const PublicFeed = ({ currentUser }) => {
           <Comment 
             journalEntryId={entry.id} 
             currentUsername={currentUser} 
+            onClose={() => setShowComments(false)} 
+
           />
         )}
         {/* Expanded area for when a card is expanded */}

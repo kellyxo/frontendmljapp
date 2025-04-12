@@ -242,7 +242,7 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
         
         {/* Fixed header with X button */}
         <div style={{
-          padding: '25px 15px',
+          padding: '35px 15px',
           borderBottom: '1px solid #eee',
           display: 'flex',
           justifyContent: 'space-between',

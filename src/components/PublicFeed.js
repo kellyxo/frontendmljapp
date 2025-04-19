@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { HeartFill, Globe, LockFill, ThreeDots ,ChatLeft} from 'react-bootstrap-icons';
 import ThemeSwitcher from './ThemeSwitcher';
 import Comment from './comments/Comment';
+import SOTD from './Spotify/SOTD';
 
 
 const API_URL = 'https://mljapp.onrender.com/japp';
@@ -487,7 +488,10 @@ const PublicFeed = ({ currentUser }) => {
   return (
     <div className="container fade-in">
       <h1 className="mb-4">Public Feed <i className="flower-icon">📝</i></h1>
-      
+      <div className="sotd-wrapper" style={{ marginBottom: '30px' }}>
+        <SOTD />
+      </div>
+
       {error && (
         <div style={{ 
           color: 'red', 

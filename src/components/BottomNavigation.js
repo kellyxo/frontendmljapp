@@ -23,7 +23,7 @@ const BottomNavigation = ({ currentUser }) => {
     
     const fetchUnreadCount = async () => {
       try {
-        const response = await axios.get(`${API_URL}/notifications/${currentUser}/unread/count`);
+        const response = await api.get(`/notifications/${currentUser}/unread/count`);
         if (response.status === 200) {
           setUnreadCount(response.data);
         }

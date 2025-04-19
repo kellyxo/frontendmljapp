@@ -65,6 +65,7 @@ const Login = ({ setCurrentUser }) => {
       });
       
       if (response.status === 200) {
+        localStorage.setItem('authToken', response.data.token);
         setCurrentUser(formData.username);
         console.log("Login successful with FCM token registration");
       }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import api from '../../service/api';
 
 class SpotifyService {
   constructor() {
@@ -43,11 +44,18 @@ class SpotifyService {
       throw error;
     }
   }
+  // try to get SOTD from backend first
+  async GetSotdFromBackend() {
+    try {
+        const response = await api
+    }
+  }
 
   // Get playlist tracks
   async getPlaylistTracks(playlistId) {
     try {
-      const token = await this.getAccessToken();
+    
+        const token = await this.getAccessToken();
       
       const response = await axios.get(`${this.apiBaseUrl}/playlists/${playlistId}/tracks`, {
         headers: {

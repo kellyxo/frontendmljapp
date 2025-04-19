@@ -9,7 +9,6 @@ const SOTD = () => {
   const containerRef = useRef(null);
   const embedControllerRef = useRef(null);
 
-  // Hot Hits USA playlist ID for testing
   const PLAYLIST_ID = '36jMjt77enSYMSr4uoYe9J';
   
   // Load Spotify Embed API

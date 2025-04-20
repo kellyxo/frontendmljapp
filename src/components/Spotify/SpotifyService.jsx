@@ -1,5 +1,4 @@
 import axios from 'axios';
-import api from '../../service/api';
 
 class SpotifyService {
   constructor() {
@@ -47,8 +46,16 @@ class SpotifyService {
   // try to get SOTD from backend first
   async GetSotdFromBackend() {
     try {
-        const response = await api
-    }
+        const response = await axios.get("https://mljapp.onrender.com/japp/sotd/active");
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching song of the day:', error);
+        if (error.response && error.response.status === 404) {
+          // Handle the case where no active SOTD exists
+          console.log("No active SOTD found, will fall back to Spotify API");
+        }
+        return null;
+      }
   }
 
   // Get playlist tracks

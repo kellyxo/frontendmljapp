@@ -489,7 +489,7 @@ const PublicFeed = ({ currentUser }) => {
     <div className="container fade-in">
       <h1 className="mb-4">Public Feed <i className="flower-icon">📝</i></h1>
       <div className="sotd-wrapper" style={{ marginBottom: '30px' }}>
-        <SOTD />
+        <SOTD currentUser={currentUser}/>
       </div>
 
       {error && (

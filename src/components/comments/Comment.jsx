@@ -6,7 +6,7 @@ import { X } from 'react-bootstrap-icons';
 const GIPHY_API_KEY = process.env.REACT_APP_GIPHY_API_KEY;
 const API_URL = 'https://mljapp.onrender.com/japp';
 
-const Comment = ({ journalEntryId, currentUsername, onClose }) => {
+const Comment = ({ journalEntryId, sotdId, isSotd, currentUsername, onClose }) => {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -41,13 +41,17 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
     
     document.addEventListener('touchstart', handleTouchOutside);
     return () => document.removeEventListener('touchstart', handleTouchOutside);
-  }, [journalEntryId, onClose]);
+  }, [isSotd ? sotdId : journalEntryId, onClose]);
 
-  // Fetch comments for the journal entry
+  // Fetch comments based on type (journal entry or SOTD)
   const fetchComments = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/comments/entry/${journalEntryId}`);
+      const endpoint = isSotd 
+        ? `${API_URL}/comments/sotd/${sotdId}` 
+        : `${API_URL}/comments/entry/${journalEntryId}`;
+      
+      const response = await axios.get(endpoint);
       setComments(response.data || []);
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -62,16 +66,35 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
     if (!newComment.trim()) return;
     
     try {
-      const response = await axios.post(`${API_URL}/comments/text`, {
-        username: currentUsername,
-        journalEntryId,
-        content: newComment
-      });
+      // Choose the appropriate endpoint based on type
+      const endpoint = isSotd 
+        ? `${API_URL}/comments/sotd/text` 
+        : `${API_URL}/comments/text`;
+      
+      // Prepare the request payload based on type
+      const payload = isSotd 
+        ? {
+            username: currentUsername,
+            sotdID: sotdId,
+            content: newComment
+          }
+        : {
+            username: currentUsername,
+            journalEntryId,
+            content: newComment
+          };
+      
+      const response = await axios.post(endpoint, payload);
       
       if (response.data) {
+        // For journal entries, the API returns the created comment
         setComments([response.data, ...comments]);
-        setNewComment('');
+      } else {
+        // For SOTD, we might need to refresh the comments
+        fetchComments();
       }
+      
+      setNewComment('');
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -181,11 +204,25 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
   // Add a GIF comment
   const handleGifSelected = async (gifUrl) => {
     try {
-      await axios.post(`${API_URL}/comments/gif`, {
-        username: currentUsername,
-        journalEntryId,
-        gifUrl
-      });
+      // Choose the appropriate endpoint based on type
+      const endpoint = isSotd 
+        ? `${API_URL}/comments/sotd/gif` 
+        : `${API_URL}/comments/gif`;
+      
+      // Prepare the request payload based on type
+      const payload = isSotd 
+        ? {
+            username: currentUsername,
+            sotdID: sotdId,
+            gifUrl
+          }
+        : {
+            username: currentUsername,
+            journalEntryId,
+            gifUrl
+          };
+      
+      await axios.post(endpoint, payload);
       
       // Refresh comments to see the new GIF
       fetchComments();
@@ -207,22 +244,23 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
 
   return (
     <div className="comments-modal" 
-      ref={modalRef}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        zIndex: 1000,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        transition: 'opacity 0.2s ease-in-out',
-      }} 
-      onClick={onClose ? () => onClose() : undefined}
-    >
+    ref={modalRef}
+    style={{
+      position: 'absolute', // Changed from fixed to absolute
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      zIndex: 1000,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      transition: 'opacity 0.2s ease-in-out',
+      borderRadius: '10px', // Match SOTD container
+    }} 
+    onClick={onClose ? () => onClose() : undefined}
+  >
       {/* Modal Content */}
       <div className="comments-content container" 
         style={{ 
@@ -252,7 +290,9 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
           backgroundColor: 'var(--background-color, #fff)',
           zIndex: 10,
         }}>
-          <h3 style={{ margin: 0 }}>Comments</h3>
+          <h3 style={{ margin: 0 }}>
+            {isSotd ? 'SOTD Comments' : 'Comments'}
+          </h3>
           
           {onClose && (
             <button 
@@ -305,7 +345,7 @@ const Comment = ({ journalEntryId, currentUsername, onClose }) => {
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment..."
+                placeholder={isSotd ? "Comment on this song..." : "Write a comment..."}
                 className="form-control"
                 rows={3}
                 style={{

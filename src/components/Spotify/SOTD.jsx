@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SpotifyService from './SpotifyService';
 import axios from 'axios';
+import Comment from '../comments/Comment';
+import { ChatLeft } from 'react-bootstrap-icons';
 
 const SOTD = ({ currentUser }) => {
   const [trackUri, setTrackUri] = useState('');
@@ -18,6 +20,10 @@ const SOTD = ({ currentUser }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [selectedTrack, setSelectedTrack] = useState(null);
+  const [songOfTheDayId, setSongOfTheDayId] = useState(null);
+  const [showComments, setShowComments] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
+  
 
   const PLAYLIST_ID = '4rziA8pwlBa2Hg61IHpnEz';
   const API_URL = 'https://mljapp.onrender.com/japp';
@@ -130,6 +136,7 @@ const SOTD = ({ currentUser }) => {
       // Send to backend
       const response = await axios.post(`${API_URL}/sotd`, sotdData);
       console.log('SOTD saved to backend:', response.data);
+      setSongOfTheDayId(response.data.id);
       return response.data;
     } catch (err) {
       console.error('Error saving SOTD to backend:', err);
@@ -210,6 +217,19 @@ const SOTD = ({ currentUser }) => {
     }
   };
 
+  // Fetch comment count for the current SOTD
+  const fetchCommentCount = async (sotdId) => {
+    if (!sotdId) return;
+    try {
+      const response = await axios.get(`${API_URL}/comments/sotd/${sotdId}`);
+      if (response.data && Array.isArray(response.data)) {
+        setCommentCount(response.data.length);
+      }
+    } catch (error) {
+      console.error('Error fetching SOTD comment count:', error);
+    }
+  };
+
   // Effect to fetch a song on component mount
   useEffect(() => {
     const fetchSongOfTheDay = async () => {
@@ -232,6 +252,10 @@ const SOTD = ({ currentUser }) => {
             album: backendSOTD.album,
             image: backendSOTD.imageUrl
           });
+          setSongOfTheDayId(backendSOTD.id);
+          
+          // Fetch comment count
+          fetchCommentCount(backendSOTD.id);
           
           // Initialize the embed with the track URI
           await initializeEmbed(uri);
@@ -241,7 +265,11 @@ const SOTD = ({ currentUser }) => {
           const track = await SpotifyService.getRandomTrackFromPlaylist(PLAYLIST_ID);
           
           // Save the new track to the backend
-          await saveSOTDToBackend(track);
+          const savedTrack = await saveSOTDToBackend(track);
+          setSongOfTheDayId(savedTrack.id);
+          
+          // Fetch comment count for the new SOTD
+          fetchCommentCount(savedTrack.id);
           
           // Set the track URI and info for display
           const uri = formatTrackUri(track.id);
@@ -291,6 +319,19 @@ const SOTD = ({ currentUser }) => {
     };
   }, []);
 
+  // Effect to update comment count when comments are shown/hidden
+  useEffect(() => {
+    if (!showComments && songOfTheDayId) {
+      // Refresh comment count when comments are closed
+      fetchCommentCount(songOfTheDayId);
+    }
+  }, [showComments, songOfTheDayId]);
+
+  // Toggle comments visibility
+  const handleToggleComments = () => {
+    setShowComments(!showComments);
+  };
+
   // Render the component
   return (
     <div className="sotd-container" style={{ 
@@ -299,7 +340,8 @@ const SOTD = ({ currentUser }) => {
       padding: '20px',
       backgroundColor: 'var(--card-bg, #fff)',
       borderRadius: '10px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+      position: 'relative'
     }}>
       <h2 className="sotd-title" style={{ 
         textAlign: 'center',
@@ -309,6 +351,16 @@ const SOTD = ({ currentUser }) => {
       
       {loading && (
         <div className="sotd-loading" style={{ textAlign: 'center', padding: '20px' }}>
+          <div className="loading-spinner" style={{
+            display: 'inline-block',
+            width: '20px',
+            height: '20px',
+            border: '3px solid rgba(0,0,0,0.1)',
+            borderRadius: '50%',
+            borderTopColor: 'var(--primary-color, #007bff)',
+            animation: 'spin 1s linear infinite',
+            marginRight: '10px'
+          }}></div>
           Loading song...
         </div>
       )}
@@ -346,7 +398,44 @@ const SOTD = ({ currentUser }) => {
         </div>
       )}
       
-     
+      {songOfTheDayId && !loading && embedReady && (
+        <div className="sotd-actions" style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: '15px',
+          padding: '10px 0',
+          borderTop: '1px solid var(--shadow-color, rgba(0,0,0,0.1))'
+        }}>
+          <button
+            onClick={() => setShowComments(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+              color: 'var(--primary-color)',
+              fontWeight: 'bold',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              marginRight: '8px'
+            }}
+          >
+            <ChatLeft style={{ marginRight: '6px', color: '#FF6B6B' }} />
+            {commentCount > 0 ? `Comments (${commentCount})` : 'Add Comment'}
+          </button>
+        </div>
+      )}
+
+      {/* Show the Comment component when showComments is true */}
+      {showComments && songOfTheDayId && (
+        <Comment
+          sotdId={songOfTheDayId}
+          currentUsername={currentUser}
+          isSotd={true}
+          onClose={() => setShowComments(false)}
+        />
+      )}
       
       {/* Admin Section - Only visible to admin user */}
       {isAdmin && (
@@ -449,6 +538,14 @@ const SOTD = ({ currentUser }) => {
           )}
         </div>
       )}
+
+      {/* Spinner animation style */}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

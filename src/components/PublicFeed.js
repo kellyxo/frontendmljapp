@@ -457,6 +457,7 @@ const PublicFeed = ({ currentUser }) => {
           <Comment 
             journalEntryId={entry.id} 
             currentUsername={currentUser} 
+            isSotd={false}
             onClose={() => setShowComments(false)} 
 
           />

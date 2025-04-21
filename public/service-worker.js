@@ -1,6 +1,6 @@
 // public/service-worker.js
 
-const APP_VERSION = 'v1.7';
+const APP_VERSION = 'v1.7.1';
 
 // Names for our caches with versioning
 const STATIC_CACHE = `memorylane-static-${APP_VERSION}`;

@@ -1,6 +1,6 @@
 // public/service-worker.js
 
-const APP_VERSION = 'v1.7.1';
+const APP_VERSION = 'v1.7.2';
 
 // Names for our caches with versioning
 const STATIC_CACHE = `memorylane-static-${APP_VERSION}`;
@@ -27,7 +27,6 @@ self.addEventListener('install', (event) => {
         console.log('Service Worker: Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       })
-      .then(() => self.skipWaiting()) // Force service worker activation
   );
 });
 
@@ -54,14 +53,21 @@ self.addEventListener('activate', (event) => {
         // Take control immediately
         self.clients.claim(),
         
-        // Send update notification to clients
+        // Only send update notification to clients if we've actually updated
+        // (don't notify on first activation)
         self.clients.matchAll().then(clients => {
-          clients.forEach(client => {
-            client.postMessage({
-              type: 'APP_UPDATED',
-              version: APP_VERSION
+          // Check if we have previous version info
+          const lastVersion = self.registration.active ? 
+            self.registration.active.scriptURL.includes(APP_VERSION) : false;
+            
+          if (lastVersion && lastVersion !== APP_VERSION) {
+            clients.forEach(client => {
+              client.postMessage({
+                type: 'APP_UPDATED',
+                version: APP_VERSION
+              });
             });
-          });
+          }
         })
       ]);
     })

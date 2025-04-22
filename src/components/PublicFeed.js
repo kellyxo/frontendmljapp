@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { HeartFill, Globe, LockFill, ThreeDots ,ChatLeft} from 'react-bootstrap-icons';
@@ -241,6 +241,15 @@ const PublicFeed = ({ currentUser }) => {
     const isExpanded = expandedEntryId === entry.id;
     const isOwner = entry.username === currentUser;
     const[showComments, setShowComments] = useState(false)
+    const entryCardRef = useRef(null);
+
+    const isEntryTooSmallForComments = () => {
+      if (!entryCardRef.current) return false;
+      
+      // Check if the entry card is smaller than a certain threshold (e.g., 300px)
+      const cardHeight = entryCardRef.current.offsetHeight;
+      return cardHeight < 300; // Adjust this threshold as needed
+    };
 
     
     return (
@@ -458,6 +467,7 @@ const PublicFeed = ({ currentUser }) => {
             journalEntryId={entry.id} 
             currentUsername={currentUser} 
             isSotd={false}
+            inContainer={isEntryTooSmallForComments}
             onClose={() => setShowComments(false)} 
 
           />

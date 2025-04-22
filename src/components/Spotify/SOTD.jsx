@@ -404,7 +404,8 @@ const SOTD = ({ currentUser }) => {
           justifyContent: 'center',
           marginTop: '15px',
           padding: '10px 0',
-          borderTop: '1px solid var(--shadow-color, rgba(0,0,0,0.1))'
+          borderTop: '1px solid var(--shadow-color, rgba(0,0,0,0.1))',
+
         }}>
           <button
             onClick={() => setShowComments(true)}
@@ -433,6 +434,7 @@ const SOTD = ({ currentUser }) => {
           sotdId={songOfTheDayId}
           currentUsername={currentUser}
           isSotd={true}
+          inContainer={true}
           onClose={() => setShowComments(false)}
         />
       )}

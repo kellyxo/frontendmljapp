@@ -70,7 +70,7 @@ const PublicFeed = ({ currentUser }) => {
         }
         
         // After getting friends, fetch their entries
-        await fetchFriendsEntries(response.data);
+        await fetchFriendsEntries();
         
         // Then fetch public entries from non-friends
         fetchPublicEntries();
@@ -190,25 +190,23 @@ const PublicFeed = ({ currentUser }) => {
   };
 
   // Fetch entries from friends
-  const fetchFriendsEntries = async (friendsList) => {
-    if (!friendsList || !Array.isArray(friendsList)) {
+  const fetchFriendsEntries = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/entriesPublic/friends/${currentUser}`);
+      if (response.status === 200) {
+        const sortedEntries = response.data.sort((a,b) =>
+          new Date(b.createdAt) - new Date(a.createdAt)
+          );
+        setFriendsEntries(sortedEntries);
+      } else {
+        setFriendsEntries([]);
+      }
+    } catch (error) {
+      console.error('Error fetching friends entries:', error);
       setFriendsEntries([]);
-      return;
     }
-  
-    // Extract usernames from friend DTOs
-    const friendUsernames = friendsList.map(friendDTO => {
-      if (friendDTO.username1 === currentUser) return friendDTO.username2 || friendDTO.Username2;
-      return friendDTO.username1 || friendDTO.Username1;
-    }).filter(username => username); // Filter out any undefined or null
-  
-    // Filter entries that belong to friends
-    const entries = publicEntries.filter(entry => 
-      friendUsernames.includes(entry.username) || entry.username === currentUser
-    );
-  
-    setFriendsEntries(entries);
   };
+  
 
   // Combine public and friends entries, removing duplicates
   const allEntries = () => {
@@ -224,7 +222,22 @@ const PublicFeed = ({ currentUser }) => {
       new Date(b.createdAt) - new Date(a.createdAt)
     );
   };
-
+  // new method for now to roll out new feed type
+  const allFriendsAndOwnEntries = () => {
+    const combinedEntries = [
+      ...friendsEntries,
+      ...publicEntries.filter(entry => entry.username === currentUser)
+    ];
+  
+    // Remove duplicates by entry ID
+    const uniqueEntries = Array.from(
+      new Map(combinedEntries.map(entry => [entry.id, entry])).values()
+    );
+  
+    // Sort by most recent first
+    return uniqueEntries.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  };
+  
   // Format date for better display
   const formatDate = (dateString) => {
     const options = { 
@@ -534,7 +547,7 @@ const PublicFeed = ({ currentUser }) => {
         </div>
       ) : (
         <div className="card-feed">
-          {allEntries().map((entry) => (
+          {allFriendsAndOwnEntries().map((entry) => (
             <EntryCard key={entry.id} entry={entry} />
           ))}
         </div>

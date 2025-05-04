@@ -54,11 +54,16 @@ const PublicFeed = ({ currentUser }) => {
     fetchFriends();
     // fetchPublicEntries() will be called after fetchFriends completes
   }, [currentUser]);
+
+
   /**
    * 
    * @returns promise for refresh component
    */
   const handleRefresh = async () => {
+    if (window.scrollY > 5) {
+      return Promise.resolve(); // don't refresh if not at top
+    }
     if(!canRefresh){
       toast.info('Please wait to refresh');
       return;
@@ -536,6 +541,7 @@ const PublicFeed = ({ currentUser }) => {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}
+    disabled={false}
     icon={<ChevronDown className="custom-arrow-icon" />}>
     <div className="container fade-in">
       <h1 className="mb-4">Public Feed <i className="flower-icon">📝</i></h1>
@@ -582,6 +588,7 @@ const PublicFeed = ({ currentUser }) => {
       
       
       <div style={{ height: '70px' }}></div> {/* Space for bottom navigation */}
+
     </div>
     </PullToRefresh>
 

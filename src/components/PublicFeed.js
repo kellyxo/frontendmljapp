@@ -18,6 +18,7 @@ const PublicFeed = ({ currentUser }) => {
   const [userProfiles, setUserProfiles] = useState({});
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const[menuVisibleId, setMenuVisibleId] = useState(null);
+
   
   // Helper function to get a user's profile picture
   const getUserProfilePic = (entry) => {
@@ -547,7 +548,7 @@ const PublicFeed = ({ currentUser }) => {
         </div>
       ) : (
         <div className="card-feed">
-          {allFriendsAndOwnEntries().map((entry) => (
+          {friendsEntries.map((entry) => (
             <EntryCard key={entry.id} entry={entry} />
           ))}
         </div>

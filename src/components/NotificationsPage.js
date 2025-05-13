@@ -16,7 +16,7 @@ const NotificationsPage = ({ currentUser }) => {
       fetchNotifications();
       
       // Setup interval to check for new notifications
-      const interval = setInterval(fetchNotifications, 30000); // Check every 30 seconds
+      const interval = setInterval(fetchNotifications, 90000); // Check every 90 seconds
       
       return () => clearInterval(interval);
     }

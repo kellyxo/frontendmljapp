@@ -540,9 +540,9 @@ const PublicFeed = ({ currentUser }) => {
 
 
   return (
-    <PullToRefresh onRefresh={handleRefresh}
-    disabled={false}
-    icon={<ChevronDown className="custom-arrow-icon" />}>
+    // <PullToRefresh onRefresh={handleRefresh}
+    // disabled={false}
+    // icon={<ChevronDown className="custom-arrow-icon" />}>
     <div className="container fade-in">
       <h1 className="mb-4">Public Feed <i className="flower-icon">📝</i></h1>
       <div className="sotd-wrapper" style={{ marginBottom: '30px' }}>
@@ -590,7 +590,7 @@ const PublicFeed = ({ currentUser }) => {
       <div style={{ height: '70px' }}></div> {/* Space for bottom navigation */}
 
     </div>
-    </PullToRefresh>
+    // </PullToRefresh>
 
   );
 };
